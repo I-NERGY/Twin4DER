@@ -3,6 +3,8 @@ import pymongo
 import sys
 from pymongo import MongoClient
 import pandas as pd
+import datetime
+from bson.json_util import dumps, loads
 
 
 def read_credentials():
@@ -30,3 +32,13 @@ def create_csv_current(current_collection):
     current_df = pd.DataFrame(current_collection.find())
     current_df.to_csv('current_new.csv')
     return True
+
+def get_selectable_dates(data_collection):
+    selectable_dates=sorted(data_collection.distinct("date"), key=lambda x: datetime.datetime.strptime(x, "%Y-%m-%d"))
+    return selectable_dates
+
+def get_data_between_dates(data_collection,start_date_selection,end_date_selection):
+    user_query = { "date": { "$gte": start_date_selection , "$lte": end_date_selection}}
+    user_query_result = data_collection.find(user_query)
+    result_list=list(user_query_result)
+    return result_list
