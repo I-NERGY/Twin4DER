@@ -47,3 +47,18 @@ def get_power_selected_dates(initial_date, final_date):
       headers=info_dates
    )
    return response
+
+@app.route('/connection/collections/power/dates/<initial_date>/<final_date>/curated')
+def get_power_selected_dates_curated(initial_date, final_date):
+   global power_collection
+   info_dates={'begin' : initial_date, 'end' : final_date, 'success' : True, 'magnitude': 'power'}
+   result_power_raw=interface_db.get_data_between_dates_raw(power_collection,initial_date,final_date)
+   result_list=interface_db.process_query_power_data(result_power_raw)
+   result_json=dumps(result_list, indent = 2)
+   response = Response(
+      response=result_json, 
+      status=200,
+      mimetype='application/json',
+      headers=info_dates
+   )
+   return response
