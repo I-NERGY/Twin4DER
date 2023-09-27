@@ -2,6 +2,7 @@
 *ipynb_checkpoints
 *.csv
 credentials.json
+credentials.py
 
 # Backup files # 
 *.bak 
@@ -37,7 +38,10 @@ pip-delete-this-directory.txt
 # Jupyter Notebook 
 .ipynb_checkpoints
 .jupyter
-.local 
+.local
+.npm
+.ipython
+.bash_history
 
 # pyenv 
 .python-version 
