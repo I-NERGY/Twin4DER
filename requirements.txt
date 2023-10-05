@@ -1,5 +1,7 @@
+# SPDX-FileCopyrightText: 2023, Institute for Automation of Complex Power Systems, EONERC, RWTH Aachen University
+# SPDX-License-Identifier: MPL-2.0
+
 dnspython==2.4.2
-dpsim==1.1.1
 numpy==1.26.0
 pandas==2.1.1
 pymongo==4.5.0
@@ -8,3 +10,8 @@ pytz==2023.3.post1
 scipy==1.11.2
 six==1.16.0
 tzdata==2023.3
+ipywidgets==8.1.1
+dpsim @ git+https://github.com/sogno-platform/dpsim@hotfix-missing-simulation-stop # FIXME! This hotfix was not yet integrated to the master branch
+villas-dataprocessing
+villas-node
+paho-mqtt==1.1
