@@ -5,7 +5,7 @@
 ARG BASE_IMAGE=jupyter/minimal-notebook:python-3.10
 FROM ${BASE_IMAGE}
 
-# Install toolchain to build dpsim and villas-dataprocessing
+# Install toolchain to build dpsim
 USER root
 ADD install-dev-tools.sh .
 RUN ./install-dev-tools.sh
