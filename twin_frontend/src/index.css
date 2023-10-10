@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  font-family: "Playfair Display", serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f1f1f1;
+  color: black;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.btn-custom {
+  background-color: brown;
+  color: black;
+}

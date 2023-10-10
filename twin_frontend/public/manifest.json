@@ -1,0 +1,15 @@
+{
+  "short_name": "Twin DER",
+  "name": "Digital Twin for Distributed Energy Markets",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "ico"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
