@@ -1,4 +1,7 @@
 openapi: 3.0.0
+servers:
+  - description: Twin-API
+    url: https://github.com/I-NERGY/Twin4DER/twin_api
 info:
   title: Sample API
   version: 1.0.0
