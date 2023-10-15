@@ -11,7 +11,7 @@ scipy==1.11.2
 six==1.16.0
 tzdata==2023.3
 ipywidgets==8.1.1
-dpsim @ git+https://github.com/sogno-platform/dpsim@hotfix-missing-simulation-stop # FIXME! This hotfix was not yet integrated to the master branch
+dpsim @ git+https://github.com/sogno-platform/dpsim@revise-pf-solver # FIXME! This fix was not yet integrated to the master branch
 villas-dataprocessing
 villas-node
 paho-mqtt==1.1
