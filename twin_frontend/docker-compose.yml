@@ -1,0 +1,16 @@
+version: "3"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      # expose service on port 3000
+      - "3000:3000"
+    # during development, mount volumed from host machine into docker container
+    volumes:
+      - /app/node_modules
+      # mount the contents of this directory into the '/app' folder of the container
+      # any changes made in this directory will the cause the react development server
+      # to rebuild the app
+      - .:/app

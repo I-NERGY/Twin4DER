@@ -1,0 +1,20 @@
+# use node base image
+FROM node:16-alpine
+
+# create app folder and give user 'node' permissions
+RUN mkdir /app && chown node:node /app
+
+# set working directory
+WORKDIR '/app'
+
+# copy package.json to docker image from current directory
+COPY --chown=node:node package.json .
+
+# install node dependencies
+RUN npm install
+
+# copy everything from here to the image (src code etc.)
+COPY --chown=node:node . .
+
+# run app in development mode
+CMD ["npm", "run", "start"]
