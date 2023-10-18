@@ -30,17 +30,21 @@ class Settings extends React.Component {
   }
 
   doInitialize = () => {
+    this.setState({ doWait: true });
+
     axios.get('/connection/collections/initialize')
       .then(response => {
-        this.setState({ textValue: 'Initialization successful!' });
+        this.setState({ textValue: 'Initialization successful!', doWait: false });
       })
       .catch(error => {
-        this.setState({ textValue: 'Initialization failed, see console' });
+        this.setState({ textValue: 'Initialization failed, see console', doWait: false });
         console.error('There was a problem with the Axios request:', error);
       });
   };
 
   getSelectableDates = () => {
+    this.setState({ doWait: true });
+
     axios.get('/connection/collections/power/selectable-dates')
       .then(response => {
         const datesAsArrayOfStrings = response.data["dates"];
@@ -54,11 +58,12 @@ class Settings extends React.Component {
           startDate: minDate,
           endDate: maxDate,
           minDate: minDate,
-          maxDate: maxDate
+          maxDate: maxDate,
+          doWait: false
         });
       })
       .catch(error => {
-        this.setState({ textValue: 'Getting selectable dates failed, see console' });
+        this.setState({ textValue: 'Getting selectable dates failed, see console', doWait: false });
         console.error('There was a problem with the Axios request:', error);
       });
   };
@@ -72,7 +77,8 @@ class Settings extends React.Component {
 
   getRawData = () => {
     this.setState({ doWait: true });
-    const path = '/connection/collections/power/dates/' + formatDate(this.state.startDate) + '/' + formatDate(this.state.endDate);
+
+    const path = '/connection/collections/power/dates/' + formatDate(this.state.startDate) + '/' + formatDate(this.state.endDate) + '/curated';
     console.log(path);
     axios.get(path)
       .then(response => {
@@ -115,8 +121,8 @@ class Settings extends React.Component {
             />
           }
         </div>
-        <Button variant="success" onClick={this.doInitialize}>Initialize</Button>
-        <Button variant="primary" onClick={this.getSelectableDates}>Get Selectable Dates</Button>
+        <Button variant="success" disabled={this.state.doWait} onClick={this.doInitialize}>Initialize</Button>
+        <Button variant="primary" disabled={this.state.doWait} onClick={this.getSelectableDates}>Get Selectable Dates</Button>
         <Form>
           <Form.Text muted>Start Date:</Form.Text>
           <DatePicker
@@ -137,7 +143,7 @@ class Settings extends React.Component {
             onChange={(date) => this.setState({ endDate: date })}
           />
         </Form>
-        <Button variant="primary" onClick={this.getRawData}>Get Raw Data</Button>
+        <Button variant="primary" disabled={this.state.doWait} onClick={this.getRawData}>Get Raw Data</Button>
       </div>
     );
   }
