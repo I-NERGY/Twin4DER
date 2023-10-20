@@ -1,0 +1,26 @@
+version: "3"
+services:
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "3003:80"
+    depends_on:
+      - frontend
+      - api
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: ./twin_api
+  frontend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./twin_frontend
+    volumes:
+      # don't try to overwrite node_modules folder inside container, leave it as is
+      - /app/node_modules
+      # mount the contents of the twin_frontend directory into the '/app' folder of the container
+      # any changes made in this directory will the cause the react development server to rebuild the app
+      - ./twin_frontend:/app
