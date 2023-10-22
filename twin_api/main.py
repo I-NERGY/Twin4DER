@@ -24,9 +24,8 @@ import datetime
 from bson.json_util import dumps, loads
 
 import interface_db
+import interface_dpsim
 
-global db
-global current_collection, power_collection, voltage_collection
 
 tags_metadata = [
     {
@@ -44,6 +43,22 @@ tags_metadata = [
     {
         "name": "get curated power measurements between dates",
         "description": "Retrieves the power measurement data available between two dates, and filters the invalid data.",
+    },
+    {
+        "name": "initialize circuit",
+        "description": "Operations with the simulator: The **circuit initialization** logic is here.",
+    },
+        {
+        "name": "retrieve simulation data",
+        "description": "Operations with the database: The **data** required for the simulation is retrieved.",
+    },
+    {
+        "name": "configure simulation",
+        "description": "Operations with the simulator: The **simulation configuration** logic is here.",
+    },
+    {
+        "name": "run step-wise simulation",
+        "description": "Operations with the simulator: The **simulation loop** runs all the steps and stores results.",
     },
 ]
 
@@ -113,3 +128,31 @@ def get_power_selected_dates_curated(initial_date : datetime.date, final_date : 
       headers=info_dates,
       media_type="application/json"
    )
+
+@app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
+def read_simulation_circuit():
+   interface_dpsim.read_mpc_file()
+   return {"message" : "The electrical circuit is loaded.", 
+           "success" : True}
+
+@app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
+def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
+   interface_db.process_selected_timestamps(data_collection=power_collection,
+                                            start_date_selection=initial_date.isoformat(),
+                                            end_date_selection=final_date.isoformat())
+   return {"message" : "The simulation initial data retrieval is done.", 
+           "success" : True}
+
+@app.get('/simulation/dpsim/configure', tags=["configure simulation"])
+def configure_simulation_parameters():
+   interface_dpsim.dpsim_simulation_setup()
+   return {"message" : "The simulation setup is done.", 
+           "totalTimesteps" : len(interface_db.user_requested_timestamps),
+           "success" : True}
+
+@app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
+def run_stepwise_simulation():
+   interface_dpsim.main_simulation_loop()
+   return {"message" : "The simulation setup is running.", 
+           "totalTimesteps" : len(interface_db.user_requested_timestamps),
+           "success" : True}

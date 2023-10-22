@@ -25,3 +25,5 @@ uvicorn==0.23.2
 uvloop==0.18.0
 watchfiles==0.21.0
 websockets==12.0
+dpsim @ git+https://github.com/sogno-platform/dpsim@revise-pf-solver # FIXME! This fix was not yet integrated to the master branch
+villas-dataprocessing @ git+https://github.com/VILLASframework/dataprocessing
