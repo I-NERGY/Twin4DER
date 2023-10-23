@@ -1,3 +1,4 @@
+# compose file for building and running the frontend in development mode
 version: "3"
 services:
   web:

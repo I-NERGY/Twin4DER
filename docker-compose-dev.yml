@@ -28,7 +28,7 @@ services:
       - ./twin_api:/home/jovyan/twin_api
   frontend:
     build:
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       context: ./twin_frontend
     volumes:
       # don't try to overwrite node_modules folder inside container, leave it as is
