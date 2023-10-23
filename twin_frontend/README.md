@@ -7,11 +7,10 @@ npm install
 npm start
 ```
 
-### Docker
-Build with docker and run using docker compose:
+### Using Docker
+Build docker container and run it with docker compose:
 ```
 docker compose up
 ```
-
 
 ## Production

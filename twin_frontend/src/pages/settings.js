@@ -32,7 +32,7 @@ class Settings extends React.Component {
   doInitialize = () => {
     this.setState({ doWait: true });
 
-    axios.get('/connection/collections/initialize')
+    axios.get('/api/connection/collections/initialize')
       .then(response => {
         this.setState({ textValue: 'Initialization successful!', doWait: false });
       })
@@ -45,7 +45,7 @@ class Settings extends React.Component {
   getSelectableDates = () => {
     this.setState({ doWait: true });
 
-    axios.get('/connection/collections/power/selectable-dates')
+    axios.get('/api/connection/collections/power/selectable-dates')
       .then(response => {
         const datesAsArrayOfStrings = response.data["dates"];
         const dateObjects = datesAsArrayOfStrings.map(dateString => new Date(dateString));
@@ -78,7 +78,7 @@ class Settings extends React.Component {
   getRawData = () => {
     this.setState({ doWait: true });
 
-    const path = '/connection/collections/power/dates/' + formatDate(this.state.startDate) + '/' + formatDate(this.state.endDate) + '/curated';
+    const path = '/api/connection/collections/power/dates/' + formatDate(this.state.startDate) + '/' + formatDate(this.state.endDate) + '/curated';
     console.log(path);
     axios.get(path)
       .then(response => {

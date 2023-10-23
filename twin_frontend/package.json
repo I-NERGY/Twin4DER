@@ -26,7 +26,6 @@
     "redux": "^4.2.1",
     "web-vitals": "^2.1.4"
   },
-  "proxy": "http://localhost:31032",
   "scripts": {
     "deploy": "npm run build && gh-pages -d build",
     "start": "react-scripts start",
