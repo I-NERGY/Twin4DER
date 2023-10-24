@@ -10,6 +10,10 @@ WORKDIR '/app'
 # copy package.json to docker image from current directory
 COPY --chown=node:node package.json .
 
+RUN npm install
+
+COPY --chown=node:node . .
+
 # build project, will create build folder
 RUN npm run build
 
