@@ -2,7 +2,10 @@
 FROM python:3.9.18-alpine
 
 # set the working directory in the container
-WORKDIR /app
+WORKDIR /app/twin_api
+
+# Create a directory for the credentials (is mounted with docker compose)
+RUN mkdir -p /app/credentials
 
 # copy the requirements file into the container
 COPY requirements-api.txt .
