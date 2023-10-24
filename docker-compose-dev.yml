@@ -23,16 +23,18 @@ services:
       - "31032:5050"
     volumes:
       # mount credentials file
-      - ./credentials/credentials.json:/home/jovyan/credentials/credentials.json
+      - ${PWD}/credentials/:/home/jovyan/credentials/
+      - ${PWD}/credentials/credentials.json:/home/jovyan/credentials/credentials.json
       # during development, mount volumes from host machine into docker container
-      - ./twin_api:/home/jovyan/twin_api
+      #- ./twin_api:/home/jovyan/twin_api
   frontend:
     build:
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      # dockerfile: Dockerfile.dev
       context: ./twin_frontend
-    volumes:
-      # don't try to overwrite node_modules folder inside container, leave it as is
-      - /app/node_modules
-      # mount the contents of the twin_frontend directory into the '/app' folder of the container
-      # any changes made in this directory will the cause the react development server to rebuild the app
-      - ./twin_frontend:/app
+    #volumes:
+    #  # don't try to overwrite node_modules folder inside container, leave it as is
+    #  - /app/node_modules
+    #  # mount the contents of the twin_frontend directory into the '/app' folder of the container
+    #  # any changes made in this directory will the cause the react development server to rebuild the app
+    #  - ./twin_frontend:/app
