@@ -10,6 +10,12 @@ services:
     depends_on:
       - frontend
       - api
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - '3001:3000'
   api:
     build:
       dockerfile: Dockerfile-api-dpsim.dev
@@ -25,16 +31,18 @@ services:
       # mount credentials file
       - ${PWD}/credentials/:/home/jovyan/credentials/
       - ${PWD}/credentials/credentials.json:/home/jovyan/credentials/credentials.json
+      # mount network models for dpsim
+      - ${PWD}/network_model/:/home/jovyan/network_model/
       # during development, mount volumes from host machine into docker container
       #- ./twin_api:/home/jovyan/twin_api
   frontend:
     build:
-      dockerfile: Dockerfile
-      # dockerfile: Dockerfile.dev
+      # dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       context: ./twin_frontend
-    #volumes:
+    volumes:
     #  # don't try to overwrite node_modules folder inside container, leave it as is
-    #  - /app/node_modules
+      - /app/node_modules
     #  # mount the contents of the twin_frontend directory into the '/app' folder of the container
     #  # any changes made in this directory will the cause the react development server to rebuild the app
-    #  - ./twin_frontend:/app
+      - ./twin_frontend:/app

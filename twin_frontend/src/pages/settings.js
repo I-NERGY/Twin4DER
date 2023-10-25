@@ -26,6 +26,8 @@ class Settings extends React.Component {
       startDate: undefined,
       endDate: undefined,
       doWait: false,
+      startBGcolor: 'red',
+      endBGcolor: 'lightblue'
     };
   }
 
@@ -91,6 +93,61 @@ class Settings extends React.Component {
       });
   };
 
+  doInitializeDPsim = () => {
+    this.setState({ doWait: true });
+
+    axios.get('/api/simulation/dpsim/initialize')
+      .then(response => {
+        this.setState({ textValue: 'Initialization of DPsim successful!', doWait: false });
+      })
+      .catch(error => {
+        this.setState({ textValue: 'Initialization failed, see console', doWait: false });
+        console.error('There was a problem with the Axios request:', error);
+      });
+  };
+
+  getSimulationData = () => {
+    this.setState({ doWait: true });
+
+    const path = '/api/simulation/dpsim/getdata/' + formatDate(this.state.startDate) + '/' + formatDate(this.state.endDate);
+    console.log(path);
+    axios.get(path)
+      .then(response => {
+        this.setState({ textValue: response.data.message, doWait: false });
+        console.log(response);
+      })
+      .catch(error => {
+        this.setState({ textValue: 'Receiving simulation data failed, see console', doWait: false });
+        console.error('There was a problem with the Axios request:', error);
+      });
+  };
+
+  doConfigureDPsim = () => {
+    this.setState({ doWait: true });
+
+    axios.get('/api/simulation/dpsim/configure')
+      .then(response => {
+        this.setState({ textValue: response.data.message, doWait: false });
+      })
+      .catch(error => {
+        this.setState({ textValue: 'Configuration of DPsim failed, see console', doWait: false });
+        console.error('There was a problem with the Axios request:', error);
+      });
+  };
+
+  runDPsimStepwise = () => {
+    this.setState({ doWait: true });
+
+    axios.get('/api/simulation/dpsim/run/steps')
+      .then(response => {
+        this.setState({ textValue: response.data.message, doWait: false });
+      })
+      .catch(error => {
+        this.setState({ textValue: 'Running DPsim step-wise failed, see console', doWait: false });
+        console.error('There was a problem with the Axios request:', error);
+      });
+  };
+
   render() {
     const gridStyle = {
       display: 'grid',
@@ -143,27 +200,16 @@ class Settings extends React.Component {
             onChange={(date) => this.setState({ endDate: date })}
           />
         </Form>
-        <Button variant="primary" disabled={this.state.doWait} onClick={this.getRawData}>Get Raw Data</Button>
+        <Form>
+          <Button variant="primary" disabled={this.state.doWait} onClick={this.getRawData}>Get Raw Data</Button>
+          <Button variant="success" disabled={this.state.doWait} onClick={this.doInitializeDPsim}>Init DPsim</Button>
+          <Button variant="success" disabled={this.state.doWait} onClick={this.getSimulationData}>Get Simulation Data</Button>
+          <Button variant="success" disabled={this.state.doWait} onClick={this.doConfigureDPsim}>Configure DPsim</Button>
+          <Button variant="success" disabled={this.state.doWait} onClick={this.runDPsimStepwise}>Run DPsim stepwise</Button>
+        </Form>
       </div>
     );
   }
 }
-
-
-/*
-        <Dropdown>
-          <Dropdown.Toggle variant="success" id="dropdown-start">
-            Start Date
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            {this.state.dateSelection.map(one_date => (
-              <Dropdown.Item>{one_date}</Dropdown.Item>
-            ))}
-            <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-            <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-            <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-*/
 
 export default Settings;
