@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023, Institute for Automation of Complex Power Systems, EONERC, RWTH Aachen University
+# SPDX-License-Identifier: MPL-2.0
+
 FROM jupyter/minimal-notebook:python-3.10
 
 # Install toolchain to build dpsim
@@ -5,14 +8,13 @@ USER root
 ADD install-dev-tools.sh .
 RUN ./install-dev-tools.sh
 
+USER ${NB_USER}
+
 # Install packages via requirements-api-dpsim.txt
 ADD requirements-api-dpsim.txt .
 RUN pip install -r requirements-api-dpsim.txt
 
 USER ${NB_USER}
 WORKDIR /home/${NB_USER}/twin_api 
-
-# Copy the entire current directory into the container
-COPY . .
 
 ENTRYPOINT uvicorn main:app --reload --host 0.0.0.0 --port 5050
