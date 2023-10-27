@@ -6,16 +6,15 @@ services:
       dockerfile: Dockerfile.dev
       context: ./nginx
     ports:
-      - "3003:80"
+      - "80:80"
     depends_on:
       - frontend
       - api
-  grafana:
-    image: grafana/grafana:10.2.0
-    container_name: grafana
-    restart: unless-stopped
-    ports:
-     - '3001:3000'
+#  postgres:
+#    image: postgres:16.0
+#    restart: always
+#    environment:
+#      POSTGRES_PASSWORD: example
   api:
     build:
       dockerfile: Dockerfile-api-dpsim.dev
