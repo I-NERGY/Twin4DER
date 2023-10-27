@@ -1,6 +1,6 @@
 import React from "react";
 import "./../styles/index.css";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Col, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -19,7 +19,7 @@ class Settings extends React.Component {
 
     this.state = {
       initialized: false,
-      textValue: '',
+      textValue: 'uninitialized',
       dateSelection: [],
       minDate: undefined,
       maxDate: undefined,
@@ -36,10 +36,10 @@ class Settings extends React.Component {
 
     axios.get('/api/connection/collections/initialize')
       .then(response => {
-        this.setState({ textValue: 'Initialization successful!', doWait: false });
+        this.setState({ textValue: response.data.message, doWait: false });
       })
       .catch(error => {
-        this.setState({ textValue: 'Initialization failed, see console', doWait: false });
+        this.setState({ textValue: 'Database Initialization failed, see console', doWait: false });
         console.error('There was a problem with the Axios request:', error);
       });
   };
@@ -151,20 +151,21 @@ class Settings extends React.Component {
   render() {
     const gridStyle = {
       display: 'grid',
-      gridTemplateColumns: '1fr 1fr', // Two equal columns
+      gridTemplateColumns: '2fr 1fr', // Two equal columns
     };
 
     return (
       <div className="page-heading">
-        <h1 className="title">Lorem ipsum</h1>
-        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
-          sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
-          sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
-          Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-        <p>Info Box:</p>
-        <div style={gridStyle}>
-          <Form.Control type="text" value={this.state.textValue} readOnly />
-          {this.state.doWait ?
+        <h1 className="title">Simulation setup</h1>
+        <p>Setup DPsim simulation</p>
+        <Form>
+          <Form.Group as={Row} className="mb-3">
+            <Form.Label column sm="2">
+              Simulation status:
+            </Form.Label>
+            <Form.Control column type="text" value={this.state.textValue} readOnly sm="10"/>
+            <Col sm="4">
+            { this.state.doWait ?
             <img
               style={{ height: 80 }}
               src='/images/ajax-loader.gif'
@@ -177,7 +178,15 @@ class Settings extends React.Component {
               alt="I-NERGY Logo"
             />
           }
-        </div>
+          </Col>
+          </Form.Group>
+
+          <Form.Group as={Row} className="mb-3">
+            <Form.Control column type="button" value="Initialize" disabled={this.state.doWait} sm="3"/>
+
+          </Form.Group>
+    </Form>
+
         <Button variant="success" disabled={this.state.doWait} onClick={this.doInitialize}>Initialize</Button>
         <Button variant="primary" disabled={this.state.doWait} onClick={this.getSelectableDates}>Get Selectable Dates</Button>
         <Form>
