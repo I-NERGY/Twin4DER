@@ -10,11 +10,12 @@ services:
     depends_on:
       - frontend
       - api
-#  postgres:
-#    image: postgres:16.0
-#    restart: always
-#    environment:
-#      POSTGRES_PASSWORD: example
+  postgres:
+    build:
+      context: ./postgres
+    restart: always
+    env_file:
+      ${PWD}/postgres/.env
   api:
     build:
       dockerfile: Dockerfile-api-dpsim.dev
@@ -34,6 +35,8 @@ services:
       - ${PWD}/network_model/:/home/jovyan/network_model/
       # during development, mount volumes from host machine into docker container
       #- ./twin_api:/home/jovyan/twin_api
+    env_file:
+      ${PWD}/postgres/.env
   frontend:
     build:
       # dockerfile: Dockerfile
