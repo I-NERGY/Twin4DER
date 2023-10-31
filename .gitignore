@@ -4,8 +4,6 @@
 credentials.json
 credentials.py
 
-postgres/.env
-
 # Backup files # 
 *.bak 
 
