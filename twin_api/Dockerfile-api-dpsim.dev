@@ -5,6 +5,9 @@ USER root
 ADD install-dev-tools.sh .
 RUN ./install-dev-tools.sh
 
+# Dependency for PostgresDB access, needed before installing psycopg2 python package
+RUN apt-get update && apt-get install -y libpq-dev
+
 # Install packages via requirements-api-dpsim.txt
 ADD requirements-api-dpsim.txt .
 RUN pip install -r requirements-api-dpsim.txt

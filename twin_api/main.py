@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 
 
 description = """
@@ -25,6 +25,7 @@ from bson.json_util import dumps, loads
 
 import interface_db
 import interface_dpsim
+import interface_postgres
 
 
 tags_metadata = [
@@ -89,6 +90,16 @@ def connect_to_database():
    current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
    return {"message" : "The database connection was created and the collections are loaded.", 
            "success" : True}
+
+@app.get('/postgres/version', tags=["get postgres version"])
+def connect_to_database():
+   retVal, retString = interface_postgres.connect_postgres()
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Connecting to postgres works!"})
+   elif retVal == -1:
+      return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Connecting to postgres failed, unknown error!"})
 
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():

@@ -1,5 +1,6 @@
 FROM postgres:16.0
-ENV POSTGRES_PASSWORD=secret
-ENV POSTGRES_USER=username
-ENV POSTGRES_DB=database
+
+# Copy the initialization script into the container
+COPY init.sh /docker-entrypoint-initdb.d/
+
 COPY create_fixtures.sql /docker-entrypoint-initdb.d/create_fixtures.sql

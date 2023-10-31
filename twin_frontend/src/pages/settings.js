@@ -148,6 +148,19 @@ class Settings extends React.Component {
       });
   };
 
+  connectPostgres = () => {
+    this.setState({ doWait: true });
+
+    axios.get('/api/postgres/version')
+      .then(response => {
+        this.setState({ textValue: response.data.message, doWait: false });
+      })
+      .catch(error => {
+        this.setState({ textValue: error.message, doWait: false });
+        console.error('There was a problem with the Axios request:', error);
+      });
+  };
+
   render() {
     const gridStyle = {
       display: 'grid',
@@ -215,6 +228,7 @@ class Settings extends React.Component {
           <Button variant="success" disabled={this.state.doWait} onClick={this.getSimulationData}>Get Simulation Data</Button>
           <Button variant="success" disabled={this.state.doWait} onClick={this.doConfigureDPsim}>Configure DPsim</Button>
           <Button variant="success" disabled={this.state.doWait} onClick={this.runDPsimStepwise}>Run DPsim stepwise</Button>
+          <Button variant="success" disabled={this.state.doWait} onClick={this.connectPostgres}>Connect Postgres</Button>
         </Form>
       </div>
     );
