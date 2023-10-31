@@ -6,10 +6,18 @@ services:
       dockerfile: Dockerfile.dev
       context: ./nginx
     ports:
-      - "3003:80"
+      - "80:80"
     depends_on:
       - frontend
       - api
+  postgres:
+    build:
+      context: ./postgres
+    restart: always
+    env_file:
+      ${PWD}/postgres/.env
+    ports:
+      - "5432:5432"
   api:
     build:
       dockerfile: Dockerfile-api-dpsim.dev
@@ -23,16 +31,22 @@ services:
       - "31032:5050"
     volumes:
       # mount credentials file
-      - ./credentials/credentials.json:/home/jovyan/credentials/credentials.json
+      - ${PWD}/credentials/:/home/jovyan/credentials/
+      - ${PWD}/credentials/credentials.json:/home/jovyan/credentials/credentials.json
+      # mount network models for dpsim
+      - ${PWD}/network_model/:/home/jovyan/network_model/
       # during development, mount volumes from host machine into docker container
       - ./twin_api:/home/jovyan/twin_api
+    env_file:
+      ${PWD}/postgres/.env
   frontend:
     build:
+      # dockerfile: Dockerfile
       dockerfile: Dockerfile.dev
       context: ./twin_frontend
     volumes:
-      # don't try to overwrite node_modules folder inside container, leave it as is
+    #  # don't try to overwrite node_modules folder inside container, leave it as is
       - /app/node_modules
-      # mount the contents of the twin_frontend directory into the '/app' folder of the container
-      # any changes made in this directory will the cause the react development server to rebuild the app
+    #  # mount the contents of the twin_frontend directory into the '/app' folder of the container
+    #  # any changes made in this directory will the cause the react development server to rebuild the app
       - ./twin_frontend:/app

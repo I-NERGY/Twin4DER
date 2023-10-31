@@ -16,5 +16,8 @@ RUN npm install
 # copy everything from here to the image (src code etc.)
 COPY --chown=node:node . .
 
+# expose frontend on port 3005
+EXPOSE 3005
+
 # run app in development mode
 CMD ["npm", "run", "start"]
