@@ -6,6 +6,9 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import axios from 'axios';
 
+const MINDATE = "2022-10-21";
+const MAXDATE = "2022-10-22";
+
 function formatDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -51,8 +54,11 @@ class Settings extends React.Component {
       .then(response => {
         const datesAsArrayOfStrings = response.data["dates"];
         const dateObjects = datesAsArrayOfStrings.map(dateString => new Date(dateString));
-        const minDate = new Date(Math.min(...dateObjects));
-        const maxDate = new Date(Math.max(...dateObjects));
+        //const minDate = new Date(Math.min(...dateObjects));
+        //const maxDate = new Date(Math.max(...dateObjects));
+
+        const minDate = new Date(MINDATE);
+        const maxDate = new Date(MAXDATE);
 
         this.setState({
           textValue: 'Got selectable dates!',
