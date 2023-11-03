@@ -1,4 +1,3 @@
-// dataReducer.js
 const initialState = {
     selectableDates: [],
     selectedStart: undefined,
@@ -14,11 +13,15 @@ const ENDDATE = "2022-10-22";
 const datesReducer = (state = initialState, action) => {
     switch (action.type) {
         case 'ADD_DATES':
+            const dateObjects = action.payload.map(dateString => new Date(dateString));
+            const minDate = Math.min(...dateObjects);
+            const maxDate = Math.max(...dateObjects);
+            
             return {
                 ...state,
                 selectableDates: action.payload,
-                minDate: Math.min(...selectableDates),
-                maxDate: Math.max(...selectableDates),
+                minDate: minDate,
+                maxDate: maxDate,
                 selectedStart: STARTDATE,
                 selectedEnd: ENDDATE,
             };

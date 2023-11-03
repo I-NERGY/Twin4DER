@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import "./../styles/index.css";
 
+const LogContainer = () => {
+  const logs = useSelector((state) => state.logs);
 
-const LogContainer = (props) => {
-  //const [logs, setLogs] = useState([]);
-  const { logs } = props;
-
-/*
-  const addLog = (message) => {
-    setLogs([...logs, message]);
-  };
-*/
   return (
     <div className="log-container">
       <div className="log-messages">
-        {logs.map((log, index) => (
+        {logs.logs.map((log, index) => (
           <div key={index} className="log-message">
             {log}
           </div>

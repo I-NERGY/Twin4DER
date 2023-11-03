@@ -6,8 +6,6 @@ import { useDispatch } from 'react-redux';
 
 import axios from 'axios';
 
-const MINDATE = "2022-10-21";
-const MAXDATE = "2022-10-22";
 
 function formatDate(date) {
   const year = date.getFullYear();
@@ -16,21 +14,17 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-
-
 // TODO: make "initialized" application-wide state
-// log messages also have to go into application state
 
 function Settings() {
   const dispatch = useDispatch();
 
   const [initialized, setInitialized] = useState(false);
   const [doWait, setWaiting] = useState(false);
-  const [logs, setLogs] = useState([]);
 
 
   const addLog = (message) => {
-    setLogs([...logs, message]);
+    dispatch({ type: 'ADD_LOG', payload: message });
   };
 
   const changeWaiting = (wait) => {
@@ -52,28 +46,36 @@ function Settings() {
       .then(response => {
         addLog(response.data.message);
         const datesAsArrayOfStrings = response.data["dates"];
-        const dateObjects = datesAsArrayOfStrings.map(dateString => new Date(dateString));
-        dispatch({ type: 'ADD_DATES', payload: dateObjects });
+        dispatch({ type: 'ADD_DATES', payload: datesAsArrayOfStrings });
       })
       .catch(error => {
         addLog(error.message);
       });
   };
 
-
   const doInitialize = () => {
     changeWaiting(true);
 
     // initialize external DB which provides data input for our simulations
     executeGETrequest('/api/connection/collections/initialize');
+
+    // get the dates for which there is data which can be used in a simulation
     getSelectableDates();
 
+    // initialize DPsim
+    executeGETrequest('/api/simulation/dpsim/initialize');
 
     changeWaiting(false);
   }
 
+  const prepareSimulation = () => {
+    // .... TODO
+        
+    // configure DPsim
+    executeGETrequest('/api/simulation/dpsim/configure');
+  }
+
   const runDPsimStepwise = () => {
-    //his.setState({ doWait: true });
 
     axios.get('/api/simulation/dpsim/run/steps')
       .then(response => {
@@ -105,10 +107,11 @@ function Settings() {
               alt="I-NERGY Logo"
             />
           }
-          <DateSelector selectableDates={selectableDates} />
+          <DateSelector/>
+          <button className='twin-btn' onClick={prepareSimulation} disabled={doWait}>Set timeframe for simulation</button>
           <button className='twin-btn' onClick={runDPsimStepwise} disabled={doWait}>Run simulation</button>
         </div>
-        <LogContainer logs={logs} />
+        <LogContainer/>
       </div>
     </div>
   );
@@ -117,38 +120,6 @@ function Settings() {
 export default Settings;
 
 /*
-
-  getSelectableDates = () => {
-    this.setState({ doWait: true });
-
-    axios.get('/api/connection/collections/power/selectable-dates')
-      .then(response => {
-        const datesAsArrayOfStrings = response.data["dates"];
-        const dateObjects = datesAsArrayOfStrings.map(dateString => new Date(dateString));
-        //const minDate = new Date(Math.min(...dateObjects));
-        //const maxDate = new Date(Math.max(...dateObjects));
-
-        const minDate = new Date(MINDATE);
-        const maxDate = new Date(MAXDATE);
-
-        this.setState({
-          textValue: 'Got selectable dates!',
-          dateSelection: dateObjects,
-          startDate: minDate,
-          endDate: maxDate,
-          minDate: minDate,
-          maxDate: maxDate,
-          doWait: false
-        });
-      })
-      .catch(error => {
-        this.setState({ textValue: 'Getting selectable dates failed, see console', doWait: false });
-        console.error('There was a problem with the Axios request:', error);
-      });
-  };
-
-  // check if the date is in the dateSelection array
-
 
   getRawData = () => {
     this.setState({ doWait: true });
@@ -166,18 +137,6 @@ export default Settings;
       });
   };
 
-  doInitializeDPsim = () => {
-    this.setState({ doWait: true });
-
-    axios.get('/api/simulation/dpsim/initialize')
-      .then(response => {
-        this.setState({ textValue: 'Initialization of DPsim successful!', doWait: false });
-      })
-      .catch(error => {
-        this.setState({ textValue: 'Initialization failed, see console', doWait: false });
-        console.error('There was a problem with the Axios request:', error);
-      });
-  };
 
   getSimulationData = () => {
     this.setState({ doWait: true });
@@ -226,39 +185,3 @@ export default Settings;
 
 //<Form.Control column type="text" value={this.state.textValue} readOnly sm="10"/>
 */
-
-SelectableDates}>Get Selectable Dates</Button>
-        <Form>
-          <Form.Text muted>Start Date:</Form.Text>
-          <DatePicker
-            selected={this.state.startDate}
-            minDate={this.state.minDate}
-            maxDate={this.state.maxDate}
-            filterDate={(date) => this.isDateSelectable(date)}
-            onChange={(date) => this.setState({ startDate: date })}
-          />
-        </Form>
-        <Form>
-          <Form.Text muted>End Date:</Form.Text>
-          <DatePicker
-            selected={this.state.endDate}
-            minDate={this.state.startDate}
-            maxDate={this.state.maxDate}
-            filterDate={(date) => this.isDateSelectable(date)}
-            onChange={(date) => this.setState({ endDate: date })}
-          />
-        </Form>
-        <Form>
-          <Button variant="primary" disabled={this.state.doWait} onClick={this.getRawData}>Get Raw Data</Button>
-          <Button variant="success" disabled={this.state.doWait} onClick={this.doInitializeDPsim}>Init DPsim</Button>
-          <Button variant="success" disabled={this.state.doWait} onClick={this.getSimulationData}>Get Simulation Data</Button>
-          <Button variant="success" disabled={this.state.doWait} onClick={this.doConfigureDPsim}>Configure DPsim</Button>
-          <Button variant="success" disabled={this.state.doWait} onClick={this.runDPsimStepwise}>Run DPsim stepwise</Button>
-          <Button variant="success" disabled={this.state.doWait} onClick={this.connectPostgres}>Connect Postgres</Button>
-        </Form>
-      </div>
-    );
-  }
-}
-
-export default Settings;

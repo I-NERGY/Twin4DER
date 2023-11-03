@@ -4,22 +4,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useDispatch, useSelector } from 'react-redux';
 
 
-// TODO: store selected dates, they are not actually used yet!
-
 const DateSelector = () => {
     const dispatch = useDispatch();
-    const selectableDates = useSelector((state) => state.selectableDates);
-    const startDate = useSelector((state) => state.selectableDates);
-    const endDate = useSelector((state) => state.selectableDates);
-
-    // Calculate the minimum and maximum values from the array
-    //const minDate = Math.min(...selectableDates);
-    //const maxDate = Math.max(...selectableDates);
+    const dates = useSelector((state) => state.dates);
 
     const isDateSelectable = (date) => {
-        return selectableDates.some((selectableDate) =>
-            selectableDate.toDateString() === date.toDateString()
-        );
+        const dateAsString = date.toISOString().substr(0, 10);
+        return dates.selectableDates.includes(dateAsString);
     };
 
     const setStartDate = (date) => {
@@ -32,19 +23,19 @@ const DateSelector = () => {
 
     return (
         <div>
-            <p>Simulation input starting Date:</p>
+            <p>Start date:</p>
             <DatePicker
-                selected={selectedStart}
-                minDate={minDate}
-                maxDate={maxDate}
+                selected={dates.selectedStart ? new Date(dates.selectedStart) : undefined}
+                minDate={dates.minDate ? new Date(dates.minDate) : undefined}
+                maxDate={dates.maxDate ? new Date(dates.maxDate) : undefined}
                 filterDate={(date) => isDateSelectable(date)}
                 onChange={(date) => setStartDate(date)}
             />
-            <p>Simulation input end Date:</p>
+            <p>End date:</p>
             <DatePicker
-                selected={selectedEnd}
-                minDate={startDate}
-                maxDate={maxDate}
+                selected={dates.selectedEnd ? new Date(dates.selectedEnd) : undefined}
+                minDate={dates.selectedStart ? new Date(dates.selectedStart) : undefined}
+                maxDate={dates.maxDate ? new Date(dates.maxDate) : undefined}
                 filterDate={(date) => isDateSelectable(date)}
                 onChange={(date) => setEndDate(date)}
             />

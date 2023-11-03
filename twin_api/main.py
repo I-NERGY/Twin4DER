@@ -167,6 +167,4 @@ def run_stepwise_simulation():
    interface_dpsim.main_simulation_loop()
    return {"message" : "The simulation setup is running.", 
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
-           "success" : True} running.", 
-           "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
