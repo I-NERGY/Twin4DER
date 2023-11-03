@@ -111,6 +111,7 @@ def get_selectable_dates_for_power_measurements():
       sel_dates="There was an error with the retrieval of the dates"
       suc_rq=False
    return {
+      "message" : "Selectable dates are loaded.",
       "dates": sel_dates,
       "success": suc_rq
    }
@@ -165,5 +166,7 @@ def configure_simulation_parameters():
 def run_stepwise_simulation():
    interface_dpsim.main_simulation_loop()
    return {"message" : "The simulation setup is running.", 
+           "totalTimesteps" : len(interface_db.user_requested_timestamps),
+           "success" : True} running.", 
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
