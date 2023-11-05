@@ -7,7 +7,7 @@ FROM ${BASE_IMAGE}
 
 # Install toolchain to build dpsim
 USER root
-ADD install-dev-tools.sh .
+ADD ./twin_api/install-dev-tools.sh .
 RUN ./install-dev-tools.sh
 
 # Install packages via requirements.txt
