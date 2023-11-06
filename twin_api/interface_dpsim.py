@@ -6,6 +6,7 @@ import dpsimpy
 from dpsim import matpower
 import datetime
 import interface_db
+import interface_postgres
 
 global sim
 
@@ -23,6 +24,7 @@ def dpsim_simulation_setup():
     global system
     sim_name = 'pilot_uc6'
     dpsimpy.Logger.set_log_dir('logs/' + sim_name)
+    csv_name = 'logs/' + sim_name + '/' + sim_name + '.csv'
     logger = dpsimpy.Logger(sim_name)
 
     for node in system.nodes:
@@ -42,6 +44,7 @@ def dpsim_simulation_setup():
     print("The simulation started...")
     for component in system.components:
         print(component.name())
+    return csv_name
 
 def get_meter_values(processed_power_df, timestamp, meter):
     try:
@@ -77,7 +80,7 @@ def pq_assign_dpsim(timestamp):
             sim.get_idobj_attr(asset, 'P').set(P_set*kw_w)
             sim.get_idobj_attr(asset, 'Q').set(Q_set*kw_w)
 
-def main_simulation_loop():
+def main_simulation_loop(result_file):
     global sim_timesteps
     global sim
     sim_timesteps=[]
@@ -91,3 +94,5 @@ def main_simulation_loop():
                 #print('[',dttm,'] Current timestep was ignored due to one or more measurements missing')
             sim.next()
     sim.next()
+    # write results to csv
+    interface_postgres.create_table_from_csv(result_file)

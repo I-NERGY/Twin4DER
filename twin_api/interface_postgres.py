@@ -1,5 +1,7 @@
 import psycopg2
 import os
+import pandas as pd
+from sqlalchemy import create_engine
 
 global db_name, db_user, db_password
 
@@ -10,46 +12,41 @@ db_password = os.environ.get("POSTGRES_PASSWORD")
 db_host = "postgres"
 db_port = "5432"
 
-db_conn = None
-db_cursor = None
+db_params = {
+    "host": db_host,
+    "database": db_name,
+    "user": db_user,
+    "password": db_password
+}
+
+def execute_query(sql):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return 0, result
+    except (Exception, psycopg2.Error) as error:
+        return -1, error    
 
 def connect_postgres():
-    try:
-        db_conn = psycopg2.connect(database=db_name,
-                        host=db_host,
-                        user=db_user,
-                        password=db_password,
-                        port=db_port)
-    
-        # Create a cursor to interact with the database
-        db_cursor = db_conn.cursor()
+    return execute_query("SELECT version();")
 
-        # Now you can execute SQL queries using the cursor
-        db_cursor.execute("SELECT version();")
+def create_table_from_csv(csv_file_path):
+    db_connection = "postgresql://" + db_user + ":" + db_password + "@" + db_host + "/" + db_name
+    df = pd.read_csv(csv_file_path)
+    engine = create_engine(db_connection)
+    df.to_sql(db_name, engine, if_exists='replace', index=False)
 
-        # Fetch and print the result
-        db_version = db_cursor.fetchone()
-        print("PostgreSQL database version:", db_version)
+def get_table_names():
+    sql_query = f"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+    ret, rows = execute_query(sql_query)
+    table_names = [row[0] for row in rows]
+    # remove whitespace from table names
+    table_names = [table_name.strip() for table_name in table_names]
+    return ret, table_names
 
-        return 0, db_version
-    
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL:", error)
-        return -1, error
-
-
-def fetch_dummy_data():
-    try:
-        db_cursor.execute("SELECT version();")
-
-        # Fetch and print the result
-        db_version = cursor.fetchone()
-        print("PostgreSQL database version:", db_version)
-
-        return 0, db_version
-    
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL:", error)
-        return -1, error
     
 

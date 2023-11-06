@@ -91,16 +91,6 @@ def connect_to_database():
    return {"message" : "The database connection was created and the collections are loaded.", 
            "success" : True}
 
-@app.get('/postgres/version', tags=["get postgres version"])
-def connect_to_database():
-   retVal, retString = interface_postgres.connect_postgres()
-   if retVal == 0:
-      return JSONResponse(status_code=200, content={"message" : "Connecting to postgres works!"})
-   elif retVal == -1:
-      return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
-   else:
-      return JSONResponse(status_code=500, content={"message" : "Connecting to postgres failed, unknown error!"})
-
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():
    global power_collection
@@ -157,14 +147,34 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
 
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
-   interface_dpsim.dpsim_simulation_setup()
-   return {"message" : "The simulation setup is done.", 
+   global result_file
+   result_file = interface_dpsim.dpsim_simulation_setup()
+   return {"message" : "The simulation setup is done.",
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
 
 @app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
 def run_stepwise_simulation():
-   interface_dpsim.main_simulation_loop()
-   return {"message" : "The simulation setup is running.", 
+   interface_dpsim.main_simulation_loop(result_file)
+   return {"message" : "The simulation is running.",
+           "filename": result_file,
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
+
+@app.get('/postgres/version', tags=["get postgres version"])
+def connect_to_database():
+   retVal, retString = interface_postgres.connect_postgres()
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Connecting to postgres works!"})
+   elif retVal == -1:
+      return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Connecting to postgres failed, unknown error!"})
+
+@app.get('/postgres/tables', tags=["get postgres tables"])
+def get_table_names():
+   retVal, tables = interface_postgres.get_table_names()
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table names.", "tables": tables})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table names failed, unknown error!"})
