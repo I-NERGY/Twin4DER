@@ -15,3 +15,4 @@ dpsim @ git+https://github.com/sogno-platform/dpsim@inergy-demo # Changes are no
 villas-dataprocessing @ git+https://github.com/VILLASframework/dataprocessing
 villas-node
 paho-mqtt==1.1
+requests_toolbelt
