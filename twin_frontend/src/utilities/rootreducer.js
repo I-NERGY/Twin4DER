@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
 import datesReducer from './datesreducer';
-import logsReducer from './logsreducer';
+import statusReducer from './statusreducer';
 
 const rootReducer = combineReducers({
   dates: datesReducer,
-  logs: logsReducer,
+  status: statusReducer,
 });
 
 export default rootReducer;

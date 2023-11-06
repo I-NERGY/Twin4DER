@@ -2,14 +2,14 @@ import { useSelector } from 'react-redux';
 import "./../styles/index.css";
 
 const LogContainer = () => {
-  const logs = useSelector((state) => state.logs);
+  const status = useSelector((state) => state.status);
 
   return (
     <div className="log-container">
       <div className="log-messages">
-        {logs.logs.map((log, index) => (
+        {status.logs.map((log, index) => (
           <div key={index} className="log-message">
-            {log}
+            {log.date}: {log.msg}
           </div>
         ))}
       </div>
