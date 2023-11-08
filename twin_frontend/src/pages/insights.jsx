@@ -14,14 +14,21 @@ function Insights() {
       actions.forEach((action) => {
         dispatch(action);
       });
+    });
+  }
+
+  const getColumns = (tableName) => {
+    api.fetchData('/api/postgres/columns/' + tableName, 'SET_COLUMNS', 'columns').then((actions) => {
+      actions.forEach((action) => {
+        dispatch(action);
+      });
     });}
 
   return (
       <div className="page-heading">
-        <h1 className="title">React Dashboard</h1>
-        <p>TODO</p>
+        <h1 className="title">Simulation Results </h1>
         <button className='twin-btn' onClick={getResultTableNames}>Get result tables</button>
-        <ResultList />
+        <ResultList getColumns={getColumns}/>
       </div>
     );
 

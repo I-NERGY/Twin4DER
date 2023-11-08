@@ -50,8 +50,9 @@ code {
   border: 1px solid darkgray;
 }
 
-.result-table {
-  margin-top: 0px;
-  margin-left: 30px;
-  overflow: auto;
+table, th, td {
+  border: 1px solid;
+  border-color: #427e0b;
+  background-color: #DDEEDD;
+  border-radius: 3px;
 }

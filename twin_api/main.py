@@ -120,7 +120,6 @@ def get_power_selected_dates(initial_date : datetime.date, final_date : datetime
 
 @app.get('/connection/collections/power/dates/{initial_date}/{final_date}/curated', tags=["get curated power measurements between dates"])
 def get_power_selected_dates_curated(initial_date : datetime.date, final_date : datetime.date):
-   global power_collection
    info_dates={'X-begin-selection' : initial_date.isoformat(), 'X-end-selection' : final_date.isoformat(), 'success' : str(True)}
    result_power_raw=interface_db.get_data_between_dates_raw(power_collection,initial_date.isoformat(),final_date.isoformat())
    result_list=interface_db.process_query_power_data(result_power_raw)
@@ -139,6 +138,10 @@ def read_simulation_circuit():
 
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
+   global power_collection, start_date, end_date
+   start_date = initial_date
+   end_date = final_date
+
    interface_db.process_selected_timestamps(data_collection=power_collection,
                                             start_date_selection=initial_date.isoformat(),
                                             end_date_selection=final_date.isoformat())
@@ -147,8 +150,8 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
 
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
-   global result_file
-   result_file = interface_dpsim.dpsim_simulation_setup()
+   global result_file, start_date, end_date
+   result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
    return {"message" : "The simulation setup is done.",
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
@@ -163,9 +166,9 @@ def run_stepwise_simulation():
 
 @app.get('/postgres/version', tags=["get postgres version"])
 def connect_to_database():
-   retVal, retString = interface_postgres.connect_postgres()
+   retVal, __ = interface_postgres.connect_postgres()
    if retVal == 0:
-      return JSONResponse(status_code=200, content={"message" : "Connecting to postgres works!"})
+      return JSONResponse(status_code=200, content={"message" : "Connected to embedded Postgres database."})
    elif retVal == -1:
       return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
    else:
@@ -178,3 +181,19 @@ def get_table_names():
       return JSONResponse(status_code=200, content={"message" : "Retrieved table names.", "tables": tables})
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting table names failed, unknown error!"})
+   
+@app.get('/postgres/table/{nameOfDB}', tags=["get postgres table data"])
+def get_table_data(nameOfDB: str = "numbers"):
+   retVal, tables = interface_postgres.query_table(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table data.", "tables": tables})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table data failed, unknown error!"})
+
+@app.get('/postgres/columns/{nameOfDB}', tags=["get columns of table"])
+def get_column_names(nameOfDB):
+   retVal, columns = interface_postgres.query_column_names(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table columns.", "columns": columns})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table columns failed, unknown error!"})

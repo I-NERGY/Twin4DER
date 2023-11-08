@@ -35,10 +35,21 @@ def connect_postgres():
     return execute_query("SELECT version();")
 
 def create_table_from_csv(csv_file_path):
+    new_db_name = ""
+    index = csv_file_path.rfind("/")
+    if index != -1:
+        new_db_name = csv_file_path[index + 1:]
+    else:
+        new_db_name = csv_file_path
+    new_db_name = os.path.splitext(new_db_name)[0]
+
+    create_table_query = 'CREATE TABLE IF NOT EXISTS ' + new_db_name
+    execute_query(create_table_query)
+
     db_connection = "postgresql://" + db_user + ":" + db_password + "@" + db_host + "/" + db_name
     df = pd.read_csv(csv_file_path)
     engine = create_engine(db_connection)
-    df.to_sql(db_name, engine, if_exists='replace', index=False)
+    df.to_sql(new_db_name, engine, if_exists='replace', index=False)
 
 def get_table_names():
     sql_query = f"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
@@ -48,5 +59,15 @@ def get_table_names():
     table_names = [table_name.strip() for table_name in table_names]
     return ret, table_names
 
-    
+def query_column_names(nameOfDB):
+    sql_query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{nameOfDB}'"
+    rows = execute_query(sql_query)
 
+    column_names = [row[0] for row in rows]
+    # remove whitespace from column names
+    column_names = [column_name.strip() for column_name in column_names]
+    return column_names
+
+def query_table(nameOfDB):
+    sql_query = "SELECT * FROM " + nameOfDB
+    ret, rows = execute_query(sql_query)

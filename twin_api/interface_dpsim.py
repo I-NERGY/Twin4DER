@@ -19,10 +19,13 @@ def read_mpc_file():
     mpc_reader = matpower.Reader('../network_model/load_flow_pilot_district_mpc_struct_insp.mat', 'mpc')
     system = mpc_reader.load_mpc()
 
-def dpsim_simulation_setup():
+def dpsim_simulation_setup(start_date, end_date):
     global sim
     global system
-    sim_name = 'pilot_uc6'
+    #sim_name = 'pilot_uc6'
+    start = str(start_date)
+    end = str(end_date)
+    sim_name = '_' + start.replace('-', '_') + '__' + end.replace('-', '_')
     dpsimpy.Logger.set_log_dir('logs/' + sim_name)
     csv_name = 'logs/' + sim_name + '/' + sim_name + '.csv'
     logger = dpsimpy.Logger(sim_name)
@@ -32,7 +35,7 @@ def dpsim_simulation_setup():
         logger.log_attribute(node.name()+'.S', 's', node)
 
     # Parametrize and run simulation
-    sim = dpsimpy.Simulation(sim_name, dpsimpy.LogLevel.info)
+    sim = dpsimpy.Simulation(sim_name, dpsimpy.LogLevel.off)
     sim.set_system(system)
     sim.set_time_step(1)
     sim.set_final_time(len(interface_db.user_requested_timestamps))

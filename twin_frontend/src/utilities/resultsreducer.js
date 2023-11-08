@@ -1,5 +1,6 @@
 const initialState = {
     table_names: [],
+    columns: [],
 };
 
 const resultsReducer = (state = initialState, action) => {
@@ -8,6 +9,11 @@ const resultsReducer = (state = initialState, action) => {
             return {
                 ...state,
                 table_names: action.payload,
+            };
+        case 'SET_COLUMS':
+            return {
+                ...state,
+                columns: action.payload,
             };
         default:
             return state;
