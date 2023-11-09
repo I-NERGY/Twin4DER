@@ -61,6 +61,7 @@ def query_table(nameOfDB):
 def get_column_names(nameOfDB):
     sql_query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{nameOfDB}'"
     rows = execute_query(sql_query)
+    print(rows)
 
     column_names = [row[0] for row in rows]
     # remove whitespace from column names
@@ -76,10 +77,34 @@ def get_table_names():
     table_names = [table_name.strip() for table_name in table_names]
     print("Table names:", table_names)
 
+def delete_table(nameOfDB):
+    sql_query = "DROP TABLE " + nameOfDB
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        cursor.execute(sql_query)
+        # refresh the database
+        cursor.execute("COMMIT")
+        cursor.close()
+        connection.close()
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+
+def query_table_column(table_name, column_name):
+    sql_query = "SELECT " + column_name + " FROM " + table_name
+    column_data = execute_query(sql_query)
+    print(column_data)
+
 #dbName = "test2"
 #create_table_from_csv(dbName)
 #query_table()
-#get_column_names(dbName)
+get_column_names("_2022_10_21__2022_10_22")
 #get_version()
 
-get_table_names()
+#get_table_names()
+
+#delete_table("test1")
+#get_table_names()
+
+query_table_column("_2022_10_21__2022_10_22", '          time')
+#query_table("_2022_10_21__2022_10_22")

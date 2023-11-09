@@ -41,23 +41,21 @@ function Setup() {
     });
 
     //dispatch({ type: 'INITIALIZE' });
-  }
+  };
 
-  const prepareSimulation = () => {
+  const runDPsimStepwise = () => {
     const requestSimulationData = '/api/simulation/dpsim/getdata/' + formatDate(dates.selectedStart) + '/' + formatDate(dates.selectedEnd);
 
     api.executeGETrequest(requestSimulationData).then((action) => {
       dispatch(action);
       api.executeGETrequest('/api/simulation/dpsim/configure').then((action) => {
         dispatch(action);
+        api.executeGETrequest('/api/simulation/dpsim/run/steps').then((action) => {
+          dispatch(action);
+        });
       });
     });
-  }
 
-  const runDPsimStepwise = () => {
-    api.executeGETrequest('/api/simulation/dpsim/run/steps').then((action) => {
-      dispatch(action);
-    });
   };
 
   return (
@@ -80,8 +78,8 @@ function Setup() {
               alt="I-NERGY Logo"
             />
           }
+          <p>Input timeframe for simulation:</p>
           <DateSelector />
-          <button className='twin-btn' onClick={prepareSimulation}> Set timeframe for simulation </button>
           <button className='twin-btn' onClick={runDPsimStepwise}> Run simulation </button>
         </div>
         <LogContainer />

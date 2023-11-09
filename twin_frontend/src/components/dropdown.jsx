@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import "../styles/dropdown";
+import "../styles/dropdown.css";
 
-function Dropdown({options}) {
+function Dropdown(props) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -31,11 +31,11 @@ function Dropdown({options}) {
   return (
     <div className="dropdown">
       <button className="dropdown-toggle" onClick={toggleDropdown}>
-        {selectedOption || "Select an option"}
+        {selectedOption || props.title || "Select an option"}
       </button>
       {isOpen && (
         <ul className="dropdown-menu">
-          {options.map((option, index) => (
+          {props.options.map((option, index) => (
             <li key={index} onClick={() => handleOptionSelect(option)}>
               {option}
             </li>

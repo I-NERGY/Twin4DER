@@ -11,7 +11,7 @@ WORKDIR '/app'
 COPY --chown=node:node package.json .
 
 # install node dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # copy everything from here to the image (src code etc.)
 COPY --chown=node:node . .

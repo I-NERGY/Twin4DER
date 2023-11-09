@@ -12,18 +12,25 @@ class API {
     }
 
     async fetchData(url, actiontype, datatype) {
+        const actions = [];
         try {
             const response = await axios.get(url);
-            const actions = [];
             actions.push({ type: 'ADD_LOG', payload: response.data.message });
             actions.push({ type: actiontype, payload: response.data[datatype] });
+        } catch (error) {
+            actions.push({ type: 'ADD_LOG', payload: error.message });
+        }
+        return actions;
+    };
 
-            return actions;
+    async delete(url) {
+        try {
+            const response = await axios.delete(url);
+            return { type: 'ADD_LOG', payload: response.data.message };
         } catch (error) {
             return { type: 'ADD_LOG', payload: error.message };
         }
-    };
-
+    }
 }
 
 export default API;

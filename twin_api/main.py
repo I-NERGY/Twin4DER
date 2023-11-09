@@ -190,10 +190,26 @@ def get_table_data(nameOfDB: str = "numbers"):
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting table data failed, unknown error!"})
 
-@app.get('/postgres/columns/{nameOfDB}', tags=["get columns of table"])
+@app.delete('/postgres/table/{nameOfDB}', tags=["delete postgres table"])
+async def delete_table_data(nameOfDB: str):
+   retVal = interface_postgres.delete_table(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Successfully deleted table."})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Deletion of table failed!"})
+
+@app.get('/postgres/columns/{nameOfDB}', tags=["get column names of table"])
 def get_column_names(nameOfDB):
    retVal, columns = interface_postgres.query_column_names(nameOfDB)
    if retVal == 0:
       return JSONResponse(status_code=200, content={"message" : "Retrieved table columns.", "columns": columns})
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting table columns failed, unknown error!"})
+
+@app.get('/postgres/{nameOfTable}/{nameOfColumn}', tags=["get column of table"])
+def get_column(nameOfTable, nameOfColumn):
+   retVal, column = interface_postgres.query_table_column(nameOfTable, nameOfColumn)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting column data failed, unknown error!"})

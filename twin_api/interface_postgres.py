@@ -61,13 +61,31 @@ def get_table_names():
 
 def query_column_names(nameOfDB):
     sql_query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{nameOfDB}'"
-    rows = execute_query(sql_query)
-
+    ret, rows = execute_query(sql_query)
     column_names = [row[0] for row in rows]
     # remove whitespace from column names
     column_names = [column_name.strip() for column_name in column_names]
-    return column_names
+    return ret, column_names
 
 def query_table(nameOfDB):
     sql_query = "SELECT * FROM " + nameOfDB
     ret, rows = execute_query(sql_query)
+
+def delete_table(nameOfDB):
+    try:
+        connection = psycopg2.connect(**db_params)
+        cursor = connection.cursor()
+        cursor.execute("DROP TABLE " + nameOfDB)
+        cursor.execute("COMMIT")
+        cursor.close()
+        connection.close()
+        return 0
+    except (Exception, psycopg2.Error) as error:
+        return -1
+
+def query_table_column(table_name, column_name):
+    sql_query = "SELECT " + column_name + " FROM " + table_name
+    ret, rows = execute_query(sql_query)
+    print(rows)
+    print(ret)
+    return ret, rows

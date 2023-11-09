@@ -20,7 +20,7 @@ const ResultList = (props) => {
             <button className="result-button" onClick={() => props.getColumns(table_name)}>load</button>
           </td>
           <td>
-            <button className="result-button">show</button>
+            <button className="result-button" onClick={() => props.deleteTable(table_name)}>delete</button>
           </td>
         </tr>
       ))}
