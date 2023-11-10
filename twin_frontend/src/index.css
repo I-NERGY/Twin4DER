@@ -56,3 +56,13 @@ table, th, td {
   background-color: #DDEEDD;
   border-radius: 3px;
 }
+
+.horizontal-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.horizontal-element {
+  padding: 10px;
+}

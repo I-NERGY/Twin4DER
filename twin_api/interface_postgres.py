@@ -64,7 +64,7 @@ def query_column_names(nameOfDB):
     ret, rows = execute_query(sql_query)
     column_names = [row[0] for row in rows]
     # remove whitespace from column names
-    column_names = [column_name.strip() for column_name in column_names]
+    #column_names = [column_name.strip() for column_name in column_names]
     return ret, column_names
 
 def query_table(nameOfDB):
@@ -84,8 +84,7 @@ def delete_table(nameOfDB):
         return -1
 
 def query_table_column(table_name, column_name):
-    sql_query = "SELECT " + column_name + " FROM " + table_name
-    ret, rows = execute_query(sql_query)
-    print(rows)
-    print(ret)
-    return ret, rows
+    sql_query = 'SELECT "' + column_name + '" FROM ' + table_name
+    ret, results = execute_query(sql_query)
+    column_data = [row[0] for row in results]
+    return ret, column_data

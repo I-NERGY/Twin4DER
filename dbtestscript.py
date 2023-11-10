@@ -91,7 +91,7 @@ def delete_table(nameOfDB):
         print("Error while connecting to PostgreSQL", error)
 
 def query_table_column(table_name, column_name):
-    sql_query = "SELECT " + column_name + " FROM " + table_name
+    sql_query = 'SELECT "' + column_name + '" FROM ' + table_name
     column_data = execute_query(sql_query)
     print(column_data)
 
@@ -106,5 +106,5 @@ get_column_names("_2022_10_21__2022_10_22")
 #delete_table("test1")
 #get_table_names()
 
-query_table_column("_2022_10_21__2022_10_22", '          time')
+query_table_column("_2022_10_21__2022_10_22", '       N1.V.re')
 #query_table("_2022_10_21__2022_10_22")
