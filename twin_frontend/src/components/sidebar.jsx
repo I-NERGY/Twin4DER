@@ -52,7 +52,7 @@ const Sidebar = () => {
         </ListItemButton>
         <ListItemButton
           component={Link}
-          to="demo/settings"
+          to="demo/setup"
           sx={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
         >
           <ListItemIcon>
@@ -65,7 +65,7 @@ const Sidebar = () => {
                 opacity: 0.5,
               },
             }}
-            primary="Settings"
+            primary="Setup"
           />
         </ListItemButton>
         <ListItemButton

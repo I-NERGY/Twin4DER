@@ -1,6 +1,4 @@
 import React from "react";
-import Button from "react-bootstrap/Button";
-
 
 import "./../styles/index.css";
 class Home extends React.Component {

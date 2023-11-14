@@ -91,16 +91,6 @@ def connect_to_database():
    return {"message" : "The database connection was created and the collections are loaded.", 
            "success" : True}
 
-@app.get('/postgres/version', tags=["get postgres version"])
-def connect_to_database():
-   retVal, retString = interface_postgres.connect_postgres()
-   if retVal == 0:
-      return JSONResponse(status_code=200, content={"message" : "Connecting to postgres works!"})
-   elif retVal == -1:
-      return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
-   else:
-      return JSONResponse(status_code=500, content={"message" : "Connecting to postgres failed, unknown error!"})
-
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():
    global power_collection
@@ -111,6 +101,7 @@ def get_selectable_dates_for_power_measurements():
       sel_dates="There was an error with the retrieval of the dates"
       suc_rq=False
    return {
+      "message" : "Selectable dates are loaded.",
       "dates": sel_dates,
       "success": suc_rq
    }
@@ -129,7 +120,6 @@ def get_power_selected_dates(initial_date : datetime.date, final_date : datetime
 
 @app.get('/connection/collections/power/dates/{initial_date}/{final_date}/curated', tags=["get curated power measurements between dates"])
 def get_power_selected_dates_curated(initial_date : datetime.date, final_date : datetime.date):
-   global power_collection
    info_dates={'X-begin-selection' : initial_date.isoformat(), 'X-end-selection' : final_date.isoformat(), 'success' : str(True)}
    result_power_raw=interface_db.get_data_between_dates_raw(power_collection,initial_date.isoformat(),final_date.isoformat())
    result_list=interface_db.process_query_power_data(result_power_raw)
@@ -148,6 +138,10 @@ def read_simulation_circuit():
 
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
+   global power_collection, start_date, end_date
+   start_date = initial_date
+   end_date = final_date
+
    interface_db.process_selected_timestamps(data_collection=power_collection,
                                             start_date_selection=initial_date.isoformat(),
                                             end_date_selection=final_date.isoformat())
@@ -156,14 +150,66 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
 
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
-   interface_dpsim.dpsim_simulation_setup()
-   return {"message" : "The simulation setup is done.", 
+   global result_file, start_date, end_date
+   result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
+   return {"message" : "The simulation setup is done.",
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
 
 @app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
 def run_stepwise_simulation():
-   interface_dpsim.main_simulation_loop()
-   return {"message" : "The simulation setup is running.", 
+   interface_dpsim.main_simulation_loop(result_file)
+   return {"message" : "The simulation is running.",
+           "filename": result_file,
            "totalTimesteps" : len(interface_db.user_requested_timestamps),
            "success" : True}
+
+@app.get('/postgres/version', tags=["get postgres version"])
+def connect_to_database():
+   retVal, __ = interface_postgres.connect_postgres()
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Connected to embedded Postgres database."})
+   elif retVal == -1:
+      return JSONResponse(status_code=401, content={"message" : "Connecting to postgres failed!"})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Connecting to postgres failed, unknown error!"})
+
+@app.get('/postgres/tables', tags=["get postgres tables"])
+def get_table_names():
+   retVal, tables = interface_postgres.get_table_names()
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table names.", "tables": tables})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table names failed, unknown error!"})
+   
+@app.get('/postgres/table/{nameOfDB}', tags=["get postgres table data"])
+def get_table_data(nameOfDB: str = "numbers"):
+   retVal, tables = interface_postgres.query_table(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table data.", "tables": tables})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table data failed, unknown error!"})
+
+@app.delete('/postgres/table/{nameOfDB}', tags=["delete postgres table"])
+async def delete_table_data(nameOfDB: str):
+   retVal = interface_postgres.delete_table(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Successfully deleted table."})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Deletion of table failed!"})
+
+@app.get('/postgres/columns/{nameOfDB}', tags=["get column names of table"])
+def get_column_names(nameOfDB):
+   retVal, columns = interface_postgres.query_column_names(nameOfDB)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved table columns.", "columns": columns})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting table columns failed, unknown error!"})
+
+@app.get('/postgres/{nameOfTable}/{nameOfColumn}', tags=["get column of table"])
+def get_column(nameOfTable, nameOfColumn):
+   retVal, column = interface_postgres.query_table_column(nameOfTable, nameOfColumn)
+   if retVal == 0:
+      return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column, "columnName": nameOfColumn})
+   else:
+      return JSONResponse(status_code=500, content={"message" : "Getting column data failed, unknown error!"})
