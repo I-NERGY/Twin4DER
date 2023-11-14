@@ -1,34 +1,36 @@
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 
 class API {
+    constructor() {
+        this.dispatch = useDispatch();
+    }
 
     async executeGETrequest(url) {
         try {
             const response = await axios.get(url);
-            return { type: 'ADD_LOG', payload: response.data.message };
+            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
         } catch (error) {
-            return { type: 'ADD_LOG', payload: error.message };
+            this.dispatch({ type: 'ADD_LOG', payload: error.message });
         }
     }
 
     async fetchData(url, actiontype, datatype) {
-        const actions = [];
         try {
             const response = await axios.get(url);
-            actions.push({ type: 'ADD_LOG', payload: response.data.message });
-            actions.push({ type: actiontype, payload: response.data[datatype] });
+            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
+            return response;
         } catch (error) {
-            actions.push({ type: 'ADD_LOG', payload: error.message });
+            this.dispatch({ type: 'ADD_LOG', payload: error.message });
         }
-        return actions;
     };
 
     async delete(url) {
         try {
             const response = await axios.delete(url);
-            return { type: 'ADD_LOG', payload: response.data.message };
+            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
         } catch (error) {
-            return { type: 'ADD_LOG', payload: error.message };
+            this.dispatch({ type: 'ADD_LOG', payload: error.message });
         }
     }
 }

@@ -210,6 +210,6 @@ def get_column_names(nameOfDB):
 def get_column(nameOfTable, nameOfColumn):
    retVal, column = interface_postgres.query_table_column(nameOfTable, nameOfColumn)
    if retVal == 0:
-      return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column})
+      return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column, "columnName": nameOfColumn})
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting column data failed, unknown error!"})

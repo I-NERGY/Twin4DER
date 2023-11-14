@@ -2,7 +2,8 @@ const initialState = {
     table_names: [],
     columns: [],
     times: [],
-    dataOfSelectedColumn: [],
+    dataColumns: [],
+    selectedColumns:[],
 };
 
 const resultsReducer = (state = initialState, action) => {
@@ -22,10 +23,29 @@ const resultsReducer = (state = initialState, action) => {
                 ...state,
                 times: action.payload,
             };
-        case 'SET_COLUMN_DATA':
+        case 'ADD_COLUMN_DATA':
             return {
                 ...state,
-                dataOfSelectedColumn: action.payload,
+                dataColumns: [
+                    ...state.dataColumns,
+                    {
+                        columnName: action.columnName,
+                        columnData: action.columnData,
+                    },
+                ],
+                selectedColumns: [ ...state.selectedColumns, action.columnName ],
+            };
+        case 'REMOVE_COLUMN_DATA':
+            return {
+                ...state,
+                dataColumns: state.dataColumns.filter((column) => column.columnName !== action.columnName),
+                selectedColumns: state.selectedColumns.filter((column) => column !== action.columnName),
+            };
+        case 'RESET_COLUMN_DATA':
+            return {
+                ...state,
+                dataColumns: [],
+                selectedColumns: [],
             };
         default:
             return state;

@@ -53,8 +53,11 @@ code {
 table, th, td {
   border: 1px solid;
   border-color: #427e0b;
-  background-color: #DDEEDD;
   border-radius: 3px;
+}
+
+tr :hover{
+  background-color: lightblue;
 }
 
 .horizontal-container {

@@ -1,78 +1,93 @@
-import React, {useEffect} from "react";
+import React, { useEffect, useState } from "react";
 import "./../styles/index.css";
-import ResultList from "../components/resultlist";
 import API from '../utilities/api';
 import { useDispatch, useSelector } from 'react-redux';
-import Dropdown from "../components/dropdown";
 import ResultChart from "../components/resultchart";
+import ClickableItemList from "../components/clickableitemlist";
 
 
 function Insights() {
   const api = new API();
   const dispatch = useDispatch();
-  const columns = useSelector((state) => state.results.columns);
   const results = useSelector((state) => state.results);
 
-
+  const [selectedTable, setSelectedTable] = useState("");
+  const [selectedColumns, setSelectedColumns] = useState([]);
 
   useEffect(() => {
     getResultTableNames();
-
-    let tableName = "_2022_10_21__2022_10_22";
-    let columnName = '       N1.V.re';
-    let actionType = "SET_COLUMN_DATA";
-    let dataType = "column";
-
-    getColumns(tableName);
-    getColumnData(tableName, columnName, actionType, dataType);
-    getColumnData(tableName, '          time', 'SET_TIMES', dataType);
-
   }, []);
 
   const getResultTableNames = () => {
-    api.fetchData('/api/postgres/tables', 'SET_TABLE_NAMES', 'tables').then((actions) => {
-      actions.forEach((action) => {
-        dispatch(action);
-      });
+    api.fetchData('/api/postgres/tables').then((response) => {
+      dispatch({ type: 'SET_TABLE_NAMES', payload: response.data['tables'] });
     });
   }
 
   const getColumns = (tableName) => {
-    api.fetchData('/api/postgres/columns/' + tableName, 'SET_COLUMNS', 'columns').then((actions) => {
-      actions.forEach((action) => {
-        dispatch(action);
-      });
+    dispatch({ type: 'RESET_COLUMN_DATA' });
+
+    api.fetchData('/api/postgres/columns/' + tableName).then((response) => {
+      dispatch({ type: 'SET_COLUMNS', payload: response.data['columns'] });
     });}
   
   // delete table and fetch all table names again
   const deleteTable = (tableName) => {
-    api.delete('/api/postgres/table/' + tableName).then((action) => {
-        dispatch(action);
+    api.delete('/api/postgres/table/' + tableName).then(() => {
         getResultTableNames();
   });}
 
+  const onSimulationrunSelection = (tableName) => {
+    setSelectedTable(tableName);
+    // get the columns of the selected table as well as the data of the time column
+    getColumns(tableName);
+    api.fetchData('/api/postgres/' + tableName + '/' + '          time').then((response) => {
+      dispatch({ type: 'SET_TIMES', payload: response.data['column'] });
+    });
+  }
+
+  const onColumnSelection = (columnName) => {
+    console.log(columnName)
+
+    api.fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
+      dispatch({ type: 'ADD_COLUMN_DATA', columnData: response.data['column'], columnName: response.data['columnName'] });
+    });
+  }
+
   const getColumnData = (tableName, columnName, actionType, dataType) => {
-    api.fetchData('/api/postgres/' + tableName + '/' + columnName, actionType, dataType).then((actions) => {
-      actions.forEach((action) => {
-        dispatch(action);
-      });
+    api.fetchData('/api/postgres/' + tableName + '/' + columnName, actionType, dataType).then((response) => {
+      dispatch({ type: actionType, payload: response.data[dataType] });
     });}
+
+  const handleColumnClick = (columnName) => {
+    const isColumnSelected = selectedColumns.includes(columnName);
+    if (isColumnSelected) {
+      setSelectedColumns(selectedColumns.filter((item) => item !== columnName));
+      dispatch({ type: 'REMOVE_COLUMN_DATA', columnName: columnName });
+    } else {
+      setSelectedColumns([...selectedColumns, columnName]);
+      api.fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
+        dispatch({ type: 'ADD_COLUMN_DATA', columnData: response.data['column'], columnName: response.data['columnName'] });
+      });
+    }
+  }
 
   return (
       <div className="page-heading">
         <h1 className="title">Simulation Results </h1>
         <div className="horizontal-container">
-        <ResultList title="Simulation runs" data={results.table_names}/>
-        <ResultList title="Results" data={results.columns}/>
-        <ResultChart a={results.times} b={results.dataOfSelectedColumn}/>
+        <ClickableItemList title="Simulation runs" data={results.table_names} onSelection={onSimulationrunSelection} selectedItems={selectedTable}/>
+        <ClickableItemList title="Results" data={results.columns} onSelection={handleColumnClick} selectedItems={selectedColumns}/>
+        {
+          results.dataColumns.length > 0 && results.times.length > 0 ? 
+          <ResultChart x={results.times} y={results.dataColumns}/> 
+          : null
+        }
         </div>
 
       </div>
     );
 
 }
-
-//<ResultList getColumns={getColumns} deleteTable={deleteTable}/>
-
 
 export default Insights;
