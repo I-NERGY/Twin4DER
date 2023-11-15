@@ -28,7 +28,7 @@ services:
       - CHOWN_EXTRA_OPTS="-R"
     ports:
       # expose API on port 31032
-      - "31032:5050"
+      - "5050:5050"
     volumes:
       # mount credentials file
       - ${PWD}/credentials/:/home/jovyan/credentials/

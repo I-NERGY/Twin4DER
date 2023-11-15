@@ -1,0 +1,42 @@
+name: Run API Tests
+
+on:
+  push:
+    branches:
+      - add_tests
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.8'
+
+    - name: Pull API image
+      run: docker pull ikoester/twin4der-api
+
+    - name: Run API container
+      run: docker run -d -p 5050:5050 -v ${PWD}/twin_api:/home/jovyan/twin_api ikoester/twin4der-api
+
+    - name: Wait for API container to start
+      run: sleep 10
+
+    - name: Install dependencies for tests
+      run: pip install -r twin_api/tests/requirements.txt
+
+    - name: Run tests
+      run: pytest
+
+    - name: Stop API container
+      run: docker stop $(docker ps -q --filter ancestor=ikoester/twin4der-api)
+
+    - name: Remove API container
+      run: docker rm $(docker ps -a -q --filter ancestor=ikoester/twin4der-api)
+
+

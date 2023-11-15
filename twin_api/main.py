@@ -213,3 +213,8 @@ def get_column(nameOfTable, nameOfColumn):
       return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column, "columnName": nameOfColumn})
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting column data failed, unknown error!"})
+
+# dummy endpoint for testing
+@app.get('/postgres/dummy', include_in_schema=False)
+def dummy_endpoint():
+   return JSONResponse(status_code=200, content={"message" : "Dummy success!"})
