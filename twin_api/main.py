@@ -148,11 +148,17 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
    start_date = initial_date
    end_date = final_date
 
-   interface_db.process_selected_timestamps(data_collection=power_collection,
-                                            start_date_selection=initial_date.isoformat(),
-                                            end_date_selection=final_date.isoformat())
-   return {"message" : "The simulation initial data retrieval is done.", 
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      interface_db.process_selected_timestamps(data_collection=power_collection,
+                                                start_date_selection=initial_date.isoformat(),
+                                                end_date_selection=final_date.isoformat())
+      response = JSONResponse(status_code=200, content={"message" : "The simulation initial data retrieval is done.",
+                                                        "power_collection" : power_collection})
+   except NameError:
+      response = JSONResponse(status_code=412,
+                              content={"message" : "Error: power_collection is undefined."})
+   return response
 
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():

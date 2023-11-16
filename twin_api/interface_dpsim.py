@@ -23,7 +23,7 @@ def read_mpc_file():
         system = mpc_reader.load_mpc()
     except FileNotFoundError:
         ret = -1
-        error = 'MPC file not found'   
+        error = 'MPC file not found'
     return ret, error
 
 def dpsim_simulation_setup(start_date, end_date):
