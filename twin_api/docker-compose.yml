@@ -7,18 +7,18 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile-api-dpsim.dev
+      dockerfile: Dockerfile-minimal-dev
     user: root
     environment:
-      - CHOWN_EXTRA="/home/jovyan"
+      - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
     ports:
       # expose API on port 31032
       - "31032:5050"
-      # expose Jupyter on port 8889
-      - "8889:8888"
     # during development, mount volumes from host machine into docker container
     volumes:
-      - .:/home/jovyan/twin_api
-      - ../credentials:/home/jovyan/credentials
-      - ../network_model:/home/jovyan/network_model
+      - .:/home/dpsim/twin_api
+      - ../credentials:/home/dpsim/credentials
+      - ../network_model:/home/dpsim/network_model
+    working_dir: /home/dpsim/twin_api
+    entrypoint: uvicorn main:app --reload --host 0.0.0.0 --port 5050

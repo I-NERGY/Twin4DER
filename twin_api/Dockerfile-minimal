@@ -1,0 +1,184 @@
+# SPDX-FileCopyrightText: 2023, Institute for Automation of Complex Power Systems, EONERC, RWTH Aachen University
+# SPDX-License-Identifier: MPL-2.0
+
+ARG USERNAME=dpsim
+
+# Specify parent image. Please select a fixed tag here.
+ARG BASE_IMAGE=ubuntu:latest
+ARG BUILDER_IMAGE=jupyter/minimal-notebook:python-3.10
+
+FROM ${BUILDER_IMAGE} as base
+
+USER root
+
+RUN apt-get update && \
+	apt-get -y install \
+		apt-transport-https ca-certificates \
+		gnupg software-properties-common wget && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
+	apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+
+# Install required libssl1.1
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list
+
+# Toolchain
+RUN apt-get update && \
+	apt-get -y install \
+        libssl1.1 \
+		g++ git make cmake \
+		libeigen3-dev \
+		libgraphviz-dev \
+		libgsl-dev \
+		pybind11-dev \
+		libxml2-dev && \
+	rm -rf /var/lib/apt/lists/*
+
+# Build & Install fmtlib
+RUN cd /tmp && \
+	git clone --recursive https://github.com/fmtlib/fmt.git && \
+	mkdir -p fmt/build && cd fmt/build && \
+	git checkout 6.1.2  && \
+	cmake -DBUILD_SHARED_LIBS=ON .. && \
+	make -j$(nproc) install
+
+# Build & Install spdlog
+RUN cd /tmp && \
+	git clone --recursive https://github.com/gabime/spdlog.git && \
+	mkdir -p spdlog/build && cd spdlog/build && \
+	git checkout v1.5.0 && \
+	cmake -DSPDLOG_BUILD_SHARED=ON -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLE=OFF .. && \
+	make -j$(nproc) install
+
+# Install Sundials
+RUN git clone https://github.com/LLNL/sundials.git && \
+	git -C sundials checkout v3.1.1 && \
+	mkdir build_sundials && \
+	cd build_sundials && \
+	cmake ../sundials \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_STATIC_LIBS=OFF \
+		-DEXAMPLES_ENABLE_C=OFF && \
+	make -j$(nproc) install && \
+	cd .. && \
+	rm -rf build_sundials sundials
+
+# Install CIM++
+RUN git clone --recursive https://github.com/cim-iec/libcimpp.git && \
+	mkdir build_libcimpp && \
+	cd build_libcimpp && \
+	cmake ../libcimpp \
+		-DUSE_CIM_VERSION=CGMES_2.4.15_16FEB2016 \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+	make -j$(nproc) install && \
+	cd .. && \
+	rm -rf build_libcimpp libcimpp
+
+
+# Cloning and building it directly from git
+RUN git clone --recurse-submodules https://github.com/sogno-platform/dpsim.git --branch inergy-demo && \
+    cd dpsim && \
+	python3 ./setup.py \
+		build_ext -j $(nproc) \
+		bdist_wheel && \
+	mkdir /temp/ && \
+	cp dist/*.whl /temp/
+
+FROM ${BASE_IMAGE}
+USER root
+
+RUN apt-get update && \
+	apt-get -y install \
+		apt-transport-https ca-certificates \
+		gnupg software-properties-common wget && \
+	rm -rf /var/lib/apt/lists/*
+
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add - && \
+	apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+
+# Install required libssl1.1
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list
+
+# Toolchain
+RUN apt-get update && \
+	apt-get -y install \
+        libssl1.1 \
+		g++ git make cmake \
+		libeigen3-dev \
+		libgraphviz-dev \
+		libgsl-dev \
+		pybind11-dev \
+		libxml2-dev && \
+	rm -rf /var/lib/apt/lists/*
+
+# Build & Install fmtlib
+RUN cd /tmp && \
+	git clone --recursive https://github.com/fmtlib/fmt.git && \
+	mkdir -p fmt/build && cd fmt/build && \
+	git checkout 6.1.2  && \
+	cmake -DBUILD_SHARED_LIBS=ON .. && \
+	make -j$(nproc) install && \
+	cd /tmp && \
+	rm -rf fmt
+
+# Build & Install spdlog
+RUN cd /tmp && \
+	git clone --recursive https://github.com/gabime/spdlog.git && \
+	mkdir -p spdlog/build && cd spdlog/build && \
+	git checkout v1.5.0 && \
+	cmake -DSPDLOG_BUILD_SHARED=ON -DSPDLOG_BUILD_TESTS=OFF -DSPDLOG_BUILD_EXAMPLE=OFF .. && \
+	make -j$(nproc) install && \
+	cd /tmp && \
+	rm -rf spdlog
+
+# Install Sundials
+RUN cd /tmp && \
+	git clone https://github.com/LLNL/sundials.git && \
+	git -C sundials checkout v3.1.1 && \
+	mkdir build_sundials && \
+	cd build_sundials && \
+	cmake ../sundials \
+		-DBUILD_SHARED_LIBS=ON \
+		-DBUILD_STATIC_LIBS=OFF \
+		-DEXAMPLES_ENABLE_C=OFF && \
+	make -j$(nproc) install && \
+	cd /tmp && \
+	rm -rf sundials build_sundials 
+
+# Install CIM++
+RUN cd /tmp && \
+	git clone --recursive https://github.com/cim-iec/libcimpp.git && \
+	mkdir build_libcimpp && \
+	cd build_libcimpp && \
+	cmake ../libcimpp \
+		-DUSE_CIM_VERSION=CGMES_2.4.15_16FEB2016 \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+	make -j$(nproc) install && \
+	cd /tmp && \
+	rm -rf build_libcimpp libcimpp
+
+# Toolchain
+RUN apt-get update && \
+	apt-get -y install \
+		python3-pip \
+		libpq-dev	
+
+# Update the libraries
+RUN ldconfig
+
+# Update pip
+RUN pip install --upgrade pip
+
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
+
+# Install packages via requirements-*.txt
+ADD requirements-api-dpsim-min.txt .
+RUN pip3 install -r requirements-api-dpsim-min.txt
+
+# Copy dpsim wheel package from base container & install the packages
+COPY --from=base /temp/*.whl /tmp/
+RUN	pip3 install /tmp/*.whl
