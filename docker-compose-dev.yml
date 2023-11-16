@@ -36,7 +36,7 @@ services:
       # mount network models for dpsim
       - ${PWD}/network_model/:/home/jovyan/network_model/
       # during development, mount volumes from host machine into docker container
-      - ./twin_api:/home/jovyan/twin_api
+      - ${PWD}/twin_api:/home/jovyan/twin_api
     env_file:
       ${PWD}/postgres/.env
   frontend:

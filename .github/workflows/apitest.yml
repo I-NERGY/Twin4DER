@@ -18,11 +18,8 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Pull API image
-      run: docker pull ikoester/twin4der-api
-
-    - name: Run API container
-      run: docker run -d -p 5050:5050 -v ${PWD}/twin_api:/home/jovyan/twin_api ikoester/twin4der-api
+    - name: Build and run API container
+      run: docker compose -f ${PWD}/twin_api/docker-compose.yml up -d
 
     - name: Wait for API container to start
       run: sleep 10
@@ -34,9 +31,4 @@ jobs:
       run: pytest
 
     - name: Stop API container
-      run: docker stop $(docker ps -q --filter ancestor=ikoester/twin4der-api)
-
-    - name: Remove API container
-      run: docker rm $(docker ps -a -q --filter ancestor=ikoester/twin4der-api)
-
-
+      run: docker compose -f ${PWD}/twin_api/docker-compose.yml down

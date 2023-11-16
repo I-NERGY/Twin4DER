@@ -13,11 +13,18 @@ global sim
 def read_mpc_file():
     global system
     global meters_assets_dict
+    ret = 0
+    error = 'Success'
     #meters_assets_dict={'W0':[], 'W1':[], 'W2':[], 'W3': ['aggregated Load 2'], 'W4': ['aggregated Load 3'], 'W5':['aggregated Load 4'], 'W6': ['aggregated Load 4']}
     meters_assets_dict={'W0':[], 'W1':[], 'W2':[], 'W3': ['load2'], 'W4': ['load3'], 'W5':['load4'], 'W6': ['load4']}
     # Reader(mpc_file_path): mpc_file_path is relative to the Notebook dir
-    mpc_reader = matpower.Reader('../network_model/load_flow_pilot_district_mpc_struct_insp.mat', 'mpc')
-    system = mpc_reader.load_mpc()
+    try:
+        mpc_reader = matpower.Reader('../network_model/load_flow_pilot_district_mpc_struct_insp.mat', 'mpc')
+        system = mpc_reader.load_mpc()
+    except FileNotFoundError:
+        ret = -1
+        error = 'MPC file not found'   
+    return ret, error
 
 def dpsim_simulation_setup(start_date, end_date):
     global sim
@@ -87,6 +94,7 @@ def main_simulation_loop(result_file):
     global sim_timesteps
     global sim
     sim_timesteps=[]
+    ret = 0
     for dttm in interface_db.user_requested_timestamps:
             try:
                 pq_assign_dpsim(dttm)
@@ -99,3 +107,4 @@ def main_simulation_loop(result_file):
     sim.next()
     # write results to csv
     interface_postgres.create_table_from_csv(result_file)
+

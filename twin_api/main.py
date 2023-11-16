@@ -132,9 +132,15 @@ def get_power_selected_dates_curated(initial_date : datetime.date, final_date : 
 
 @app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
 def read_simulation_circuit():
-   interface_dpsim.read_mpc_file()
-   return {"message" : "The electrical circuit is loaded.", 
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   ret, error = interface_dpsim.read_mpc_file()
+
+   if ret == 0:
+      response = JSONResponse(status_code=200, content={"message" : "The electrical circuit is loaded."})
+   else:
+      response = JSONResponse(status_code=412, content={"message" : error})
+
+   return response
 
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
@@ -151,18 +157,34 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
    global result_file, start_date, end_date
-   result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
-   return {"message" : "The simulation setup is done.",
-           "totalTimesteps" : len(interface_db.user_requested_timestamps),
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      if start_date and end_date:
+         result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
+         response = JSONResponse(status_code=200,
+                                 content={"message" : "The simulation setup is done.",
+                                          "totalTimesteps" : len(interface_db.user_requested_timestamps)})
+   except NameError:
+      response = JSONResponse(status_code=412,
+                              content={"message" : "Error: Simulation dates (start, end) are undefined."})
+   return response
 
 @app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
 def run_stepwise_simulation():
-   interface_dpsim.main_simulation_loop(result_file)
-   return {"message" : "The simulation is running.",
-           "filename": result_file,
-           "totalTimesteps" : len(interface_db.user_requested_timestamps),
-           "success" : True}
+   global result_file
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      if result_file:
+         interface_dpsim.main_simulation_loop(result_file)
+         response = JSONResponse(status_code=200, 
+                                 content={"message" : "The simulation is running.",
+                                          "filename": result_file,
+                                          "totalTimesteps" : len(interface_db.user_requested_timestamps),
+                                          "success" : True})
+   except NameError:
+      response = JSONResponse(status_code=412,
+                              content={"message" : "Error: DPsim not correctly configured before running simulation."})
+   return response
 
 @app.get('/postgres/version', tags=["get postgres version"])
 def connect_to_database():
@@ -213,8 +235,3 @@ def get_column(nameOfTable, nameOfColumn):
       return JSONResponse(status_code=200, content={"message" : "Retrieved column from table.", "column": column, "columnName": nameOfColumn})
    else:
       return JSONResponse(status_code=500, content={"message" : "Getting column data failed, unknown error!"})
-
-# dummy endpoint for testing
-@app.get('/postgres/dummy', include_in_schema=False)
-def dummy_endpoint():
-   return JSONResponse(status_code=200, content={"message" : "Dummy success!"})
