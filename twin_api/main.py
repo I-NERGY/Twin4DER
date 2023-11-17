@@ -80,16 +80,28 @@ app = FastAPI(
    version="0.1.0",
 )
 
+current_collection = None
+power_collection = None
+voltage_collection = None
+db = None
 
 @app.get('/connection/collections/initialize', tags=["initialize database"])
 def connect_to_database():
    global current_collection, power_collection, voltage_collection
    global db
-   credentials=interface_db.read_credentials()
-   db=interface_db.create_connection(credentials)
-   current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
-   return {"message" : "The database connection was created and the collections are loaded.", 
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+
+   ret, credentials=interface_db.read_credentials()
+   if ret == 0:
+      ret, db=interface_db.create_connection(credentials)
+      if ret == 0:
+         current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
+         response = JSONResponse(status_code=200, content={"message" : "The database connection was created and the collections are loaded."})
+      else:
+         response = JSONResponse(status_code=500, content={"message" : "Error: Failed to connect to database."})
+   else:
+      response = JSONResponse(status_code=403, content={"message" : "Error: Credentials file not accessible."})
+   return response
 
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():

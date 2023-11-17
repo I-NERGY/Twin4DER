@@ -8,18 +8,28 @@ from bson.json_util import dumps, loads
 
 
 def read_credentials():
-    # Opening JSON file
-    with open('../credentials/credentials.json', 'r') as openfile:
-        # Reading from json file
-        credentials = json.load(openfile)
-    return credentials
+    ret = 0
+    credentials = None
+    try:
+        with open('../credentials/credentials.json', 'r') as openfile:
+            # Reading from json file
+            credentials = json.load(openfile)
+    except FileNotFoundError:
+        ret = -1
+    return ret, credentials
 
 def create_connection(credentials):
+    ret = 0
     db = MongoClient(credentials['pymongo_url'], 
                     credentials['pymongo_port'], 
                      username=credentials['pymongo_username'],
                      password=credentials['pymongo_password']).get_database(credentials['pymongo_database_name'])
-    return db
+    try:
+        # check connection status. The ismaster command is cheap.
+        db.command('ismaster')
+    except Exception:
+        ret = -2
+    return ret, db
 
 def create_collections(db, credentials):
     current_collection = eval(credentials['meter_current_name'])
