@@ -7,13 +7,16 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile-api-dpsim.dev
+      dockerfile: Dockerfile-minimal-dev
     user: root
     environment:
-      - CHOWN_EXTRA="/home/jovyan"
+      - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
     ports:
       - "5050:5050"
     volumes:
       - ${PWD}/twin_api:/home/jovyan/twin_api
+      - ../credentials:/home/dpsim/credentials
       - ${PWD}/network_model:/home/jovyan/network_model
+    working_dir: /home/dpsim/twin_api
+    entrypoint: uvicorn main:app --reload --host 0.0.0.0 --port 5050
