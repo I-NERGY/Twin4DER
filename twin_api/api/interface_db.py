@@ -1,13 +1,9 @@
-import json
-import pymongo
-import sys
-from pymongo import MongoClient
-import pandas as pd
-import datetime
-from bson.json_util import dumps, loads
+#import pymongo
+#from bson.json_util import dumps, loads
 
 
 def read_credentials():
+    import json
     ret = 0
     credentials = None
     try:
@@ -19,6 +15,7 @@ def read_credentials():
     return ret, credentials
 
 def create_connection(credentials):
+    from pymongo import MongoClient
     ret = 0
     db = MongoClient(credentials['pymongo_url'], 
                     credentials['pymongo_port'], 
@@ -39,11 +36,13 @@ def create_collections(db, credentials):
     return [current_collection, power_collection, voltage_collection]
 
 def create_csv_current(current_collection):
+    import pandas as pd
     current_df = pd.DataFrame(current_collection.find())
     current_df.to_csv('current_new.csv')
     return True
 
 def get_selectable_dates(data_collection):
+    import datetime
     selectable_dates=sorted(data_collection.distinct("date"), key=lambda x: datetime.datetime.strptime(x, "%Y-%m-%d"))
     return selectable_dates
 
@@ -64,6 +63,9 @@ def process_query_power_data(user_query_result):
     return processed_power_df_list
 
 def process_query_power_data_raw(user_query_result):
+    import pandas as pd
+    import datetime
+
     global processed_power_df
     power_df = pd.DataFrame(user_query_result)
     db_columns=list(power_df.columns.values)

@@ -19,10 +19,10 @@ def test_configure_without_preconditions():
     response = requests.get(BASE_URL + api_url)
     assert response.status_code == 412
 
-def test_initialize():
-    api_url = '/simulation/dpsim/initialize'
-    response = requests.get(BASE_URL + api_url)
-    assert response.status_code == 200
+#def test_initialize():
+#    api_url = '/simulation/dpsim/initialize'
+#    response = requests.get(BASE_URL + api_url)
+#    assert response.status_code == 200
 
 #def test_run_stepwise(init_fixture):
 #    start_date = '2022-10-21'

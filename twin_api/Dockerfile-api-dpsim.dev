@@ -11,13 +11,13 @@ RUN ./install-dev-tools.sh
 # Dependency for PostgresDB access, needed before installing psycopg2 python package
 RUN apt-get update && apt-get install -y libpq-dev
 
-USER ${NB_USER}
+RUN useradd -ms /bin/sh dpsim
+USER dpsim
 
 # Install packages via requirements-api-dpsim.txt
 ADD requirements-api-dpsim.txt .
 RUN pip install -r requirements-api-dpsim.txt
 
-USER ${NB_USER}
-WORKDIR /home/${NB_USER}/twin_api 
+WORKDIR /home/dpsim/twin_api/api
 
 ENTRYPOINT uvicorn main:app --reload --host 0.0.0.0 --port 5050

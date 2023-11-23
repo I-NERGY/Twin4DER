@@ -24,7 +24,6 @@ import datetime
 from bson.json_util import dumps, loads
 
 import interface_db
-import interface_dpsim
 import interface_postgres
 
 
@@ -91,9 +90,9 @@ def connect_to_database():
    global db
    response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
 
-   ret, credentials=interface_db.read_credentials()
+   ret, credentials = interface_db.read_credentials()
    if ret == 0:
-      ret, db=interface_db.create_connection(credentials)
+      ret, db = interface_db.create_connection(credentials)
       if ret == 0:
          current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
          response = JSONResponse(status_code=200, content={"message" : "The database connection was created and the collections are loaded."})
@@ -142,18 +141,6 @@ def get_power_selected_dates_curated(initial_date : datetime.date, final_date : 
       media_type="application/json"
    )
 
-@app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
-def read_simulation_circuit():
-   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
-   ret, error = interface_dpsim.read_mpc_file()
-
-   if ret == 0:
-      response = JSONResponse(status_code=200, content={"message" : "The electrical circuit is loaded."})
-   else:
-      response = JSONResponse(status_code=412, content={"message" : error})
-
-   return response
-
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
    global power_collection, start_date, end_date
@@ -172,8 +159,28 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
                               content={"message" : "Error: power_collection is undefined."})
    return response
 
+########## DPsim endpoints ##########
+
+@app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
+def read_simulation_circuit():
+   import interface_dpsim
+
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   ret, error = interface_dpsim.read_mpc_file()
+
+   if ret == 0:
+      response = JSONResponse(status_code=200, content={"message" : "The electrical circuit is loaded."})
+   else:
+      response = JSONResponse(status_code=412, content={"message" : error})
+
+   return response
+
+
+
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
+   import interface_dpsim
+
    global result_file, start_date, end_date
    response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
    try:
@@ -189,6 +196,8 @@ def configure_simulation_parameters():
 
 @app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
 def run_stepwise_simulation():
+   import interface_dpsim
+
    global result_file
    response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
    try:
@@ -203,6 +212,8 @@ def run_stepwise_simulation():
       response = JSONResponse(status_code=412,
                               content={"message" : "Error: DPsim not correctly configured before running simulation."})
    return response
+
+########## Endpoints for internal database ##########
 
 @app.get('/postgres/version', tags=["get postgres version"])
 def connect_to_database():
