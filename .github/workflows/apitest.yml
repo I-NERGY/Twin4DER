@@ -16,7 +16,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.8'
+        python-version: '3.9'
 
     - name: Build and run API container
       run: docker compose -f ${PWD}/twin_api/docker-compose.yml up -d
@@ -24,8 +24,11 @@ jobs:
     - name: Wait for API container to start
       run: sleep 10
 
+    - name: Upgrade pip
+      run: pip3 install --upgrade pip
+
     - name: Install dependencies for tests
-      run: pip install -r twin_api/tests/requirements.txt -r twin_api/requirements-api-dpsim.txt
+      run: pip3 install -r twin_api/tests/requirements.txt -r twin_api/requirements-api-dpsim-min.txt
 
     - name: Run tests
       run: pytest

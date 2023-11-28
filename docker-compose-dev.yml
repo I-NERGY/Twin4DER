@@ -20,23 +20,23 @@ services:
       - "5432:5432"
   api:
     build:
-      dockerfile: Dockerfile-api-dpsim.dev
+      dockerfile: Dockerfile-minimal-dev
       context: ./twin_api
     user: root
     environment:
-      - CHOWN_EXTRA="/home/jovyan"
+      - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
     ports:
       # expose API on port 31032
       - "5050:5050"
     volumes:
       # mount credentials file
-      - ${PWD}/credentials/:/home/jovyan/credentials/
-      - ${PWD}/credentials/credentials.json:/home/jovyan/credentials/credentials.json
+      - ${PWD}/credentials/:/home/dpsim/credentials/
+      - ${PWD}/credentials/credentials.json:/home/dpsim/credentials/credentials.json
       # mount network models for dpsim
-      - ${PWD}/network_model/:/home/jovyan/network_model/
+      - ${PWD}/network_model/:/home/dpsim/network_model/
       # during development, mount volumes from host machine into docker container
-      - ${PWD}/twin_api:/home/jovyan/twin_api
+      - ${PWD}/twin_api/api:/home/dpsim/twin_api/api
     env_file:
       ${PWD}/postgres/.env
   frontend:

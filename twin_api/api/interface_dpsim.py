@@ -19,7 +19,7 @@ def read_mpc_file():
     meters_assets_dict={'W0':[], 'W1':[], 'W2':[], 'W3': ['load2'], 'W4': ['load3'], 'W5':['load4'], 'W6': ['load4']}
     # Reader(mpc_file_path): mpc_file_path is relative to the Notebook dir
     try:
-        mpc_reader = matpower.Reader('../network_model/load_flow_pilot_district_mpc_struct_insp.mat', 'mpc')
+        mpc_reader = matpower.Reader('../../network_model/load_flow_pilot_district_mpc_struct_insp.mat', 'mpc')
         system = mpc_reader.load_mpc()
     except FileNotFoundError:
         ret = -1

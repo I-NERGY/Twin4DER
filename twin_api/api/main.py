@@ -83,19 +83,24 @@ current_collection = None
 power_collection = None
 voltage_collection = None
 db = None
+initialized = False
 
 @app.get('/connection/collections/initialize', tags=["initialize database"])
 def connect_to_database():
    global current_collection, power_collection, voltage_collection
-   global db
+   global db, initialized
    response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
 
    ret, credentials = interface_db.read_credentials()
    if ret == 0:
       ret, db = interface_db.create_connection(credentials)
       if ret == 0:
-         current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
-         response = JSONResponse(status_code=200, content={"message" : "The database connection was created and the collections are loaded."})
+         ret, current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
+         if ret == 0:
+            response = JSONResponse(status_code=200, content={"message" : "The database connection was created and the collections are loaded."})
+            initialized = True
+         else:
+            response = JSONResponse(status_code=500, content={"message" : "Creation of collections failed after DB connection."})
       else:
          response = JSONResponse(status_code=500, content={"message" : "Error: Failed to connect to database."})
    else:
@@ -104,18 +109,21 @@ def connect_to_database():
 
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():
+   global initialized
+   if not initialized:
+      response = JSONResponse(status_code=403, content={"message" : "DB connection not initialized."})
+      return response
+
    global power_collection
+   # TODO: check what happens here/ what is returned
    try:
       sel_dates=interface_db.get_selectable_dates(power_collection)
       suc_rq=True
    except:
       sel_dates="There was an error with the retrieval of the dates"
       suc_rq=False
-   return {
-      "message" : "Selectable dates are loaded.",
-      "dates": sel_dates,
-      "success": suc_rq
-   }
+   response = JSONResponse(status_code=200, content={"message" : "Selectable dates are loaded.", "dates": sel_dates})
+   return response
 
 @app.get('/connection/collections/power/dates/{initial_date}/{final_date}', tags=["get power measurements between dates"])
 def get_power_selected_dates(initial_date : datetime.date, final_date : datetime.date):
@@ -141,6 +149,8 @@ def get_power_selected_dates_curated(initial_date : datetime.date, final_date : 
       media_type="application/json"
    )
 
+########## DPsim endpoints ##########
+
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
    global power_collection, start_date, end_date
@@ -152,14 +162,11 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
       interface_db.process_selected_timestamps(data_collection=power_collection,
                                                 start_date_selection=initial_date.isoformat(),
                                                 end_date_selection=final_date.isoformat())
-      response = JSONResponse(status_code=200, content={"message" : "The simulation initial data retrieval is done.",
-                                                        "power_collection" : power_collection})
-   except NameError:
+      response = JSONResponse(status_code=200, content={"message" : "The simulation initial data retrieval is done."})
+   except NameError as error:
       response = JSONResponse(status_code=412,
-                              content={"message" : "Error: power_collection is undefined."})
+                              content={"message": "Error while processing selected timestamps."})
    return response
-
-########## DPsim endpoints ##########
 
 @app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
 def read_simulation_circuit():
@@ -171,7 +178,7 @@ def read_simulation_circuit():
    if ret == 0:
       response = JSONResponse(status_code=200, content={"message" : "The electrical circuit is loaded."})
    else:
-      response = JSONResponse(status_code=412, content={"message" : error})
+      response = JSONResponse(status_code=412, content={"message" : "Error while reading MPC file."})
 
    return response
 

@@ -1,13 +1,14 @@
 #import pymongo
 #from bson.json_util import dumps, loads
 
+user_requested_timestamps = None
 
 def read_credentials():
     import json
     ret = 0
     credentials = None
     try:
-        with open('../credentials/credentials.json', 'r') as openfile:
+        with open('../../credentials/credentials.json', 'r') as openfile:
             # Reading from json file
             credentials = json.load(openfile)
     except FileNotFoundError:
@@ -29,11 +30,14 @@ def create_connection(credentials):
     return ret, db
 
 def create_collections(db, credentials):
-    current_collection = eval(credentials['meter_current_name'])
-    power_collection = eval(credentials['meter_power_name'])
-    voltage_collection = eval(credentials['meter_voltage_name'])
+    try:
+        current_collection = eval(credentials['meter_current_name'])
+        power_collection = eval(credentials['meter_power_name'])
+        voltage_collection = eval(credentials['meter_voltage_name'])
+    except KeyError:
+        return [ -3, 0, 0, 0 ]
 
-    return [current_collection, power_collection, voltage_collection]
+    return [ 0, current_collection, power_collection, voltage_collection ]
 
 def create_csv_current(current_collection):
     import pandas as pd
@@ -96,6 +100,8 @@ def process_selected_timestamps(data_collection,start_date_selection,end_date_se
     return processed_power_df
 
 def generate_timestamps(start_date_selection,end_date_selection):
+    import pandas as pd
+
     global user_requested_timestamps
     user_requested_timestamps= pd.date_range(start_date_selection, end_date_selection, freq='5Min').tolist()
     return user_requested_timestamps
