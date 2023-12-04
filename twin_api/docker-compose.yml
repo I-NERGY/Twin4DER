@@ -13,12 +13,8 @@ services:
       - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
     ports:
-      # expose API on port 31032
-      - "31032:5050"
-    # during development, mount volumes from host machine into docker container
+      - "5050:5050"
     volumes:
-      - .:/home/dpsim/twin_api
       - ../credentials:/home/dpsim/credentials
-      - ../network_model:/home/dpsim/network_model
-    working_dir: /home/dpsim/twin_api
-    entrypoint: uvicorn main:app --reload --host 0.0.0.0 --port 5050
+      - ${PWD}/twin_api/api:/home/dpsim/twin_api/api
+      - ${PWD}/network_model:/home/dpsim/network_model
