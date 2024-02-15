@@ -20,8 +20,6 @@ COPY --chown=node:node . .
 RUN npm run build
 
 # copy build results into second-stage container
-# nginx starts up contents from /usr/share/nginx/html by default
 FROM nginx
-EXPOSE 3000
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+# nginx starts up contents from /usr/share/nginx/html by default
 COPY --from=builder /app/build /usr/share/nginx/html
