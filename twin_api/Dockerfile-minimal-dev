@@ -12,4 +12,7 @@ RUN useradd -ms /bin/sh ${USERNAME}
 USER ${USERNAME}
 WORKDIR /home/${USERNAME}/twin_api/api
 
+COPY --chown=${USERNAME}:${USERNAME} ./api .
+COPY --chown=${USERNAME}:${USERNAME} ./network_model /home/dpsim/network_model
+
 ENTRYPOINT uvicorn main:app --reload --host 0.0.0.0 --port 5050

@@ -12,9 +12,13 @@ services:
     environment:
       - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
+      - PYMONGO_URL=131.154.97.22
+      - PYMONGO_PORT=27017
+      - PYMONGO_DB=inergy_prod_db
+      - PYMONGO_USER=root
+      - PYMONGO_PASS=inergySt0rag32oo22!
+      - METER_CURRENT=db.asm_historical_smart_meters_uc6_current
+      - METER_POWER=db.asm_historical_smart_meters_uc6_power
+      - METER_VOLTAGE=db.asm_historical_smart_meters_uc6_voltage
     ports:
       - "5050:5050"
-    volumes:
-      - ../credentials:/home/dpsim/credentials
-      - ${PWD}/twin_api/api:/home/dpsim/twin_api/api
-      - ${PWD}/network_model:/home/dpsim/network_model

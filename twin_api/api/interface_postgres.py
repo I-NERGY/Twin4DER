@@ -8,8 +8,8 @@ global db_name, db_user, db_password
 db_name = os.environ.get("POSTGRES_DB")
 db_user = os.environ.get("POSTGRES_USER")
 db_password = os.environ.get("POSTGRES_PASSWORD")
+db_host = os.environ.get("POSTGRES_HOST")
 
-db_host = "postgres"
 db_port = "5432"
 
 db_params = {
@@ -29,6 +29,7 @@ def execute_query(sql):
         connection.close()
         return 0, result
     except (Exception, psycopg2.Error) as error:
+        print(error)
         return -1, error    
 
 def connect_postgres():

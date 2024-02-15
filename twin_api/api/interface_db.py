@@ -3,15 +3,22 @@
 
 user_requested_timestamps = None
 
+
 def read_credentials():
+    import os
     import json
     ret = 0
-    credentials = None
-    try:
-        with open('../../credentials/credentials.json', 'r') as openfile:
-            # Reading from json file
-            credentials = json.load(openfile)
-    except FileNotFoundError:
+    credentials = {}
+    credentials['pymongo_url'] = os.environ.get('PYMONGO_URL')
+    credentials['pymongo_port'] = int(os.environ.get('PYMONGO_PORT'))
+    credentials['pymongo_database_name'] = os.environ.get('PYMONGO_DB')
+    credentials['pymongo_username'] = os.environ.get('PYMONGO_USER')
+    credentials['pymongo_password'] = os.environ.get('PYMONGO_PASS')
+    credentials['meter_current_name'] = os.environ.get('METER_CURRENT')
+    credentials['meter_power_name'] = os.environ.get('METER_POWER')
+    credentials['meter_voltage_name'] = os.environ.get('METER_VOLTAGE')
+
+    if not credentials['pymongo_url'] or not credentials['pymongo_port'] or not credentials['pymongo_database_name'] or not credentials['pymongo_username'] or not credentials['pymongo_password'] or not credentials['meter_current_name'] or not credentials['meter_power_name'] or not credentials['meter_voltage_name']:
         ret = -1
     return ret, credentials
 

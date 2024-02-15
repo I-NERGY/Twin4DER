@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile.dev
       context: ./nginx
     ports:
-      - "80:80"
+      - "80:8080"
     depends_on:
       - frontend
       - api
@@ -15,7 +15,7 @@ services:
       context: ./postgres
     restart: always
     env_file:
-      ${PWD}/postgres/.env
+      ${PWD}/.env
     ports:
       - "5432:5432"
   api:
@@ -27,18 +27,9 @@ services:
       - CHOWN_EXTRA="/home/dpsim"
       - CHOWN_EXTRA_OPTS="-R"
     ports:
-      # expose API on port 31032
       - "5050:5050"
-    volumes:
-      # mount credentials file
-      - ${PWD}/credentials/:/home/dpsim/credentials/
-      - ${PWD}/credentials/credentials.json:/home/dpsim/credentials/credentials.json
-      # mount network models for dpsim
-      - ${PWD}/network_model/:/home/dpsim/network_model/
-      # during development, mount volumes from host machine into docker container
-      - ${PWD}/twin_api/api:/home/dpsim/twin_api/api
     env_file:
-      ${PWD}/postgres/.env
+      ${PWD}/.env
   frontend:
     build:
       # dockerfile: Dockerfile
