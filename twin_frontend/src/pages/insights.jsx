@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import "./../styles/index.css";
-import API from '../utilities/api';
+import useAPI from '../utilities/api';
 import { useDispatch, useSelector } from 'react-redux';
 import ResultChart from "../components/resultchart";
 import ClickableItemList from "../components/clickableitemlist";
 
 
 function Insights() {
-  const api = new API();
   const dispatch = useDispatch();
   const results = useSelector((state) => state.results);
+  const { fetchData, deleteData } = useAPI();
+
 
   const [selectedTable, setSelectedTable] = useState("");
   const [selectedColumns, setSelectedColumns] = useState([]);
@@ -19,7 +20,7 @@ function Insights() {
   }, []);
 
   const getResultTableNames = () => {
-    api.fetchData('/api/postgres/tables').then((response) => {
+    fetchData('/api/postgres/tables').then((response) => {
       dispatch({ type: 'SET_TABLE_NAMES', payload: response.data['tables'] });
     });
   }
@@ -27,13 +28,13 @@ function Insights() {
   const getColumns = (tableName) => {
     dispatch({ type: 'RESET_COLUMN_DATA' });
 
-    api.fetchData('/api/postgres/columns/' + tableName).then((response) => {
+    fetchData('/api/postgres/columns/' + tableName).then((response) => {
       dispatch({ type: 'SET_COLUMNS', payload: response.data['columns'] });
     });}
   
   // delete table and fetch all table names again
   const deleteTable = (tableName) => {
-    api.delete('/api/postgres/table/' + tableName).then(() => {
+    deleteData('/api/postgres/table/' + tableName).then(() => {
         getResultTableNames();
   });}
 
@@ -41,7 +42,7 @@ function Insights() {
     setSelectedTable(tableName);
     // get the columns of the selected table as well as the data of the time column
     getColumns(tableName);
-    api.fetchData('/api/postgres/' + tableName + '/' + '          time').then((response) => {
+    fetchData('/api/postgres/' + tableName + '/' + '          time').then((response) => {
       dispatch({ type: 'SET_TIMES', payload: response.data['column'] });
     });
   }
@@ -49,13 +50,13 @@ function Insights() {
   const onColumnSelection = (columnName) => {
     console.log(columnName)
 
-    api.fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
+    fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
       dispatch({ type: 'ADD_COLUMN_DATA', columnData: response.data['column'], columnName: response.data['columnName'] });
     });
   }
 
   const getColumnData = (tableName, columnName, actionType, dataType) => {
-    api.fetchData('/api/postgres/' + tableName + '/' + columnName, actionType, dataType).then((response) => {
+    fetchData('/api/postgres/' + tableName + '/' + columnName, actionType, dataType).then((response) => {
       dispatch({ type: actionType, payload: response.data[dataType] });
     });}
 
@@ -66,7 +67,7 @@ function Insights() {
       dispatch({ type: 'REMOVE_COLUMN_DATA', columnName: columnName });
     } else {
       setSelectedColumns([...selectedColumns, columnName]);
-      api.fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
+      fetchData('/api/postgres/' + selectedTable + '/' + columnName).then((response) => {
         dispatch({ type: 'ADD_COLUMN_DATA', columnData: response.data['column'], columnName: response.data['columnName'] });
       });
     }

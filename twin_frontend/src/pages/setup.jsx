@@ -2,7 +2,7 @@ import "./../styles/index.css";
 import LogContainer from '../components/logcontainer';
 import DateSelector from '../components/dateselector';
 import { useDispatch, useSelector } from 'react-redux';
-import API from '../utilities/api';
+import useAPI from '../utilities/api';
 
 function formatDate(datestr) {
   const date = new Date(datestr);
@@ -15,31 +15,31 @@ function formatDate(datestr) {
 function Setup() {
   const dates = useSelector((state) => state.dates);
   const initialized = useSelector((state) => state.status.initialized);
+  const { executeGETrequest, fetchData, deleteData } = useAPI();
 
-  const api = new API();
   const dispatch = useDispatch();
 
   const doInitialize = () => {
     // initialize external DB which provides data input for our simulations
-    api.executeGETrequest('/api/connection/collections/initialize').then(() => {
+    executeGETrequest('/api/connection/collections/initialize').then(() => {
 
       // get the dates for which there is data which can be used in a simulation
-      api.fetchData('/api/connection/collections/power/selectable-dates').then((response) => {
+      fetchData('/api/connection/collections/power/selectable-dates').then((response) => {
         dispatch({ type: 'ADD_DATES', payload: response.data['dates'] })
       });
     })
 
-    api.executeGETrequest('/api/simulation/dpsim/initialize');
-    api.executeGETrequest('/api/postgres/version');
+    executeGETrequest('/api/simulation/dpsim/initialize');
+    executeGETrequest('/api/postgres/version');
     //dispatch({ type: 'INITIALIZE' });
   };
 
   const runDPsimStepwise = () => {
     const requestSimulationData = '/api/simulation/dpsim/getdata/' + formatDate(dates.selectedStart) + '/' + formatDate(dates.selectedEnd);
 
-    api.executeGETrequest(requestSimulationData).then(() => {
-      api.executeGETrequest('/api/simulation/dpsim/configure').then(() => {
-        api.executeGETrequest('/api/simulation/dpsim/run/steps');
+    executeGETrequest(requestSimulationData).then(() => {
+      executeGETrequest('/api/simulation/dpsim/configure').then(() => {
+        executeGETrequest('/api/simulation/dpsim/run/steps');
       });
     });
 

@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      # expose service on port 3000
-      - "3000:3000"
+      # expose service on port 3005
+      - "3005:3005"
     # during development, mount volumes from host machine into docker container
     volumes:
       # don't try to overwrite node_modules folder inside container, leave it as is

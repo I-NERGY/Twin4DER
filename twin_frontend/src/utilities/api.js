@@ -1,38 +1,44 @@
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
+//import { useEffect } from 'react';
 
-class API {
-    constructor() {
-        this.dispatch = useDispatch();
-    }
+const useAPI = () => {
+    const dispatch = useDispatch();
 
-    async executeGETrequest(url) {
+    const executeGETrequest = async(url) => {
         try {
             const response = await axios.get(url);
-            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
+            dispatch({ type: 'ADD_LOG', payload: response.data.message });
         } catch (error) {
-            this.dispatch({ type: 'ADD_LOG', payload: error.message });
+            dispatch({ type: 'ADD_LOG', payload: error.message });
         }
     }
 
-    async fetchData(url, actiontype, datatype) {
+    const fetchData = async(url) => {
         try {
             const response = await axios.get(url);
-            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
+            dispatch({ type: 'ADD_LOG', payload: response.data.message });
             return response;
         } catch (error) {
-            this.dispatch({ type: 'ADD_LOG', payload: error.message });
+            dispatch({ type: 'ADD_LOG', payload: error.message });
         }
     };
 
-    async delete(url) {
+    const deleteData = async(url) => {
         try {
             const response = await axios.delete(url);
-            this.dispatch({ type: 'ADD_LOG', payload: response.data.message });
+            dispatch({ type: 'ADD_LOG', payload: response.data.message });
         } catch (error) {
-            this.dispatch({ type: 'ADD_LOG', payload: error.message });
+            dispatch({ type: 'ADD_LOG', payload: error.message });
         }
-    }
+    };
+
+    /*
+    useEffect(() => {
+        fetchData();
+      }, [url]);
+    */
+    return { executeGETrequest, fetchData, deleteData };
 }
 
-export default API;
+export default useAPI;
