@@ -10,8 +10,6 @@ function Insights() {
   const dispatch = useDispatch();
   const results = useSelector((state) => state.results);
   const { fetchData, deleteData } = useAPI();
-
-
   const [selectedTable, setSelectedTable] = useState("");
   const [selectedColumns, setSelectedColumns] = useState([]);
 

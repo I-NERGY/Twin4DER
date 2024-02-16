@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import InsightsIcon from "@mui/icons-material/Insights";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SummarizeIcon from "@mui/icons-material/Summarize";
+import LoginIcon from "@mui/icons-material/Login";
 
 const Sidebar = () => {
   return (
@@ -88,11 +88,11 @@ const Sidebar = () => {
         </ListItemButton>
         <ListItemButton
           component={Link}
-          to="demo/other"
+          to="demo/login"
           sx={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}
         >
           <ListItemIcon>
-            <SummarizeIcon />
+            <LoginIcon />
           </ListItemIcon>
           <ListItemText
             primaryTypographyProps={{

@@ -3,6 +3,9 @@ import LogContainer from '../components/logcontainer';
 import DateSelector from '../components/dateselector';
 import { useDispatch, useSelector } from 'react-redux';
 import useAPI from '../utilities/api';
+//import { keycloak } from '../utilities/keycloak';
+//import { Link } from 'react-router-dom';
+
 
 function formatDate(datestr) {
   const date = new Date(datestr);
@@ -12,10 +15,10 @@ function formatDate(datestr) {
   return `${year}-${month}-${day}`;
 }
 
-function Setup() {
+function SecureSetup() {
   const dates = useSelector((state) => state.dates);
   const initialized = useSelector((state) => state.status.initialized);
-  const { executeGETrequest, fetchData, deleteData } = useAPI();
+  const { executeGETrequest, fetchData } = useAPI();
 
   const dispatch = useDispatch();
 
@@ -74,5 +77,21 @@ function Setup() {
     </div>
   );
 };
+ 
+/*
+function SecureSetup() {
+  //const { keycloak } = useKeycloak()
+  return (
+    <div>
+      {keycloak.authenticated ? 
+        <Setup /> 
+        : 
+        <li>
+          <Link to="/oauth2/callback">Login Page</Link>
+        </li>}
+    </div>
+  );
+};
+*/
 
-export default Setup;
+export default SecureSetup;
