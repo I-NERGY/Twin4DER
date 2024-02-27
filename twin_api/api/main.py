@@ -24,7 +24,6 @@ import datetime
 from bson.json_util import dumps, loads
 
 import interface_db
-import interface_dpsim
 import interface_postgres
 
 
@@ -80,31 +79,51 @@ app = FastAPI(
    version="0.1.0",
 )
 
+current_collection = None
+power_collection = None
+voltage_collection = None
+db = None
+initialized = False
 
 @app.get('/connection/collections/initialize', tags=["initialize database"])
 def connect_to_database():
    global current_collection, power_collection, voltage_collection
-   global db
-   credentials=interface_db.read_credentials()
-   db=interface_db.create_connection(credentials)
-   current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
-   return {"message" : "The database connection was created and the collections are loaded.", 
-           "success" : True}
+   global db, initialized
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+
+   ret, credentials = interface_db.read_credentials()
+   if ret == 0:
+      ret, db = interface_db.create_connection(credentials)
+      if ret == 0:
+         ret, current_collection, power_collection, voltage_collection = interface_db.create_collections(db,credentials)
+         if ret == 0:
+            response = JSONResponse(status_code=200, content={"message" : "The database connection was created and the collections are loaded."})
+            initialized = True
+         else:
+            response = JSONResponse(status_code=500, content={"message" : "Creation of collections failed after DB connection."})
+      else:
+         response = JSONResponse(status_code=500, content={"message" : "Error: Failed to connect to database."})
+   else:
+      response = JSONResponse(status_code=403, content={"message" : "Error: Credentials file not accessible."})
+   return response
 
 @app.get('/connection/collections/power/selectable-dates', tags=["get selectable dates"])
 def get_selectable_dates_for_power_measurements():
+   global initialized
+   if not initialized:
+      response = JSONResponse(status_code=403, content={"message" : "DB connection not initialized."})
+      return response
+
    global power_collection
+   # TODO: check what happens here/ what is returned
    try:
       sel_dates=interface_db.get_selectable_dates(power_collection)
       suc_rq=True
    except:
       sel_dates="There was an error with the retrieval of the dates"
       suc_rq=False
-   return {
-      "message" : "Selectable dates are loaded.",
-      "dates": sel_dates,
-      "success": suc_rq
-   }
+   response = JSONResponse(status_code=200, content={"message" : "Selectable dates are loaded.", "dates": sel_dates})
+   return response
 
 @app.get('/connection/collections/power/dates/{initial_date}/{final_date}', tags=["get power measurements between dates"])
 def get_power_selected_dates(initial_date : datetime.date, final_date : datetime.date):
@@ -130,11 +149,7 @@ def get_power_selected_dates_curated(initial_date : datetime.date, final_date : 
       media_type="application/json"
    )
 
-@app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
-def read_simulation_circuit():
-   interface_dpsim.read_mpc_file()
-   return {"message" : "The electrical circuit is loaded.", 
-           "success" : True}
+########## DPsim endpoints ##########
 
 @app.get('/simulation/dpsim/getdata/{initial_date}/{final_date}', tags=["retrieve simulation data"])
 def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime.date):
@@ -142,27 +157,70 @@ def retrieve_simulation_data(initial_date : datetime.date, final_date : datetime
    start_date = initial_date
    end_date = final_date
 
-   interface_db.process_selected_timestamps(data_collection=power_collection,
-                                            start_date_selection=initial_date.isoformat(),
-                                            end_date_selection=final_date.isoformat())
-   return {"message" : "The simulation initial data retrieval is done.", 
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      interface_db.process_selected_timestamps(data_collection=power_collection,
+                                                start_date_selection=initial_date.isoformat(),
+                                                end_date_selection=final_date.isoformat())
+      response = JSONResponse(status_code=200, content={"message" : "The simulation initial data retrieval is done."})
+   except NameError as error:
+      response = JSONResponse(status_code=412,
+                              content={"message": "Error while processing selected timestamps."})
+   return response
+
+@app.get('/simulation/dpsim/initialize', tags=["initialize circuit"])
+def read_simulation_circuit():
+   import interface_dpsim
+
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   ret, error = interface_dpsim.read_mpc_file()
+
+   if ret == 0:
+      response = JSONResponse(status_code=200, content={"message" : "The electrical circuit is loaded."})
+   else:
+      response = JSONResponse(status_code=412, content={"message" : "Error while reading MPC file."})
+
+   return response
+
+
 
 @app.get('/simulation/dpsim/configure', tags=["configure simulation"])
 def configure_simulation_parameters():
+   import interface_dpsim
+
    global result_file, start_date, end_date
-   result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
-   return {"message" : "The simulation setup is done.",
-           "totalTimesteps" : len(interface_db.user_requested_timestamps),
-           "success" : True}
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      if start_date and end_date:
+         result_file = interface_dpsim.dpsim_simulation_setup(start_date, end_date)
+         response = JSONResponse(status_code=200,
+                                 content={"message" : "The simulation setup is done.",
+                                          "totalTimesteps" : len(interface_db.user_requested_timestamps)})
+   except NameError:
+      response = JSONResponse(status_code=412,
+                              content={"message" : "Error: Simulation dates (start, end) are undefined."})
+   return response
 
 @app.get('/simulation/dpsim/run/steps', tags=["run step-wise simulation"])
 def run_stepwise_simulation():
-   interface_dpsim.main_simulation_loop(result_file)
-   return {"message" : "The simulation is running.",
-           "filename": result_file,
-           "totalTimesteps" : len(interface_db.user_requested_timestamps),
-           "success" : True}
+   import interface_dpsim
+
+   global result_file
+   response = JSONResponse(status_code=500, content={"message" : "Unknown internal server error."})
+   try:
+      if result_file:
+         interface_dpsim.main_simulation_loop(result_file)
+         response = JSONResponse(status_code=200, 
+                                 content={"message" : "The simulation is running.",
+                                          "filename": result_file,
+                                          "totalTimesteps" : len(interface_db.user_requested_timestamps),
+                                          "success" : True})
+   except NameError:
+      response = JSONResponse(status_code=412,
+                              content={"message" : "Error: DPsim not correctly configured before running simulation."})
+   return response
+
+########## Endpoints for internal database ##########
 
 @app.get('/postgres/version', tags=["get postgres version"])
 def connect_to_database():

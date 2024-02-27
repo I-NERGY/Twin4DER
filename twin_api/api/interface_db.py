@@ -1,39 +1,52 @@
-import json
-import pymongo
-import sys
-from pymongo import MongoClient
-import pandas as pd
-import datetime
-from bson.json_util import dumps, loads
+#import pymongo
+#from bson.json_util import dumps, loads
 
+user_requested_timestamps = None
 
 def read_credentials():
-    # Opening JSON file
-    with open('../credentials/credentials.json', 'r') as openfile:
-        # Reading from json file
-        credentials = json.load(openfile)
-    return credentials
+    import json
+    ret = 0
+    credentials = None
+    try:
+        with open('../../credentials/credentials.json', 'r') as openfile:
+            # Reading from json file
+            credentials = json.load(openfile)
+    except FileNotFoundError:
+        ret = -1
+    return ret, credentials
 
 def create_connection(credentials):
+    from pymongo import MongoClient
+    ret = 0
     db = MongoClient(credentials['pymongo_url'], 
                     credentials['pymongo_port'], 
                      username=credentials['pymongo_username'],
                      password=credentials['pymongo_password']).get_database(credentials['pymongo_database_name'])
-    return db
+    try:
+        # check connection status. The ismaster command is cheap.
+        db.command('ismaster')
+    except Exception:
+        ret = -2
+    return ret, db
 
 def create_collections(db, credentials):
-    current_collection = eval(credentials['meter_current_name'])
-    power_collection = eval(credentials['meter_power_name'])
-    voltage_collection = eval(credentials['meter_voltage_name'])
+    try:
+        current_collection = eval(credentials['meter_current_name'])
+        power_collection = eval(credentials['meter_power_name'])
+        voltage_collection = eval(credentials['meter_voltage_name'])
+    except KeyError:
+        return [ -3, 0, 0, 0 ]
 
-    return [current_collection, power_collection, voltage_collection]
+    return [ 0, current_collection, power_collection, voltage_collection ]
 
 def create_csv_current(current_collection):
+    import pandas as pd
     current_df = pd.DataFrame(current_collection.find())
     current_df.to_csv('current_new.csv')
     return True
 
 def get_selectable_dates(data_collection):
+    import datetime
     selectable_dates=sorted(data_collection.distinct("date"), key=lambda x: datetime.datetime.strptime(x, "%Y-%m-%d"))
     return selectable_dates
 
@@ -54,6 +67,9 @@ def process_query_power_data(user_query_result):
     return processed_power_df_list
 
 def process_query_power_data_raw(user_query_result):
+    import pandas as pd
+    import datetime
+
     global processed_power_df
     power_df = pd.DataFrame(user_query_result)
     db_columns=list(power_df.columns.values)
@@ -84,6 +100,8 @@ def process_selected_timestamps(data_collection,start_date_selection,end_date_se
     return processed_power_df
 
 def generate_timestamps(start_date_selection,end_date_selection):
+    import pandas as pd
+
     global user_requested_timestamps
     user_requested_timestamps= pd.date_range(start_date_selection, end_date_selection, freq='5Min').tolist()
     return user_requested_timestamps

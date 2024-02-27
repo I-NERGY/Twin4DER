@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2023, Institute for Automation of Complex Power Systems, EONERC, RWTH Aachen University
 # SPDX-License-Identifier: MPL-2.0
 
-ARG USERNAME=dpsim
-
 # Specify parent image. Please select a fixed tag here.
 ARG BASE_IMAGE=leocarreras/twin4der:minimal-api
 
 FROM ${BASE_IMAGE}
 
+ARG USERNAME=dpsim
+RUN useradd -ms /bin/sh ${USERNAME}
+
 USER ${USERNAME}
-WORKDIR /home/${USERNAME}/twin_api 
+WORKDIR /home/${USERNAME}/twin_api/api
 
 ENTRYPOINT uvicorn main:app --reload --host 0.0.0.0 --port 5050
